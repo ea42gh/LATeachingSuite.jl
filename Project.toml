@@ -1,0 +1,18 @@
+name = "LATeachingSuite"
+uuid = "f02a1d25-8fbe-4b7a-bfa2-9b29357c8d47"
+version = "0.1.0-DEV"
+authors = ["ea42_github@mail.com"]
+
+[deps]
+GenLAProblems = "f8228cda-011f-463c-ac28-4f36d81e7604"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+
+[compat]
+Reexport = "1.2.2"
+julia = "1.10.10"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
