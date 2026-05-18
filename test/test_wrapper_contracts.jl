@@ -55,7 +55,6 @@ end
     @test hasmethod(LATeachingSuite.show_solution, Tuple{Any})
     @test hasmethod(LATeachingSuite.solutions, Tuple{Any})
     @test hasmethod(LATeachingSuite.rhs_block, Tuple{Any})
-    @test hasmethod(LATeachingSuite.show_ge_final, Tuple{Any,Any,Any})
 
     la_ge = _py_ns_lat()
     _py_setattr_lat(la_ge, "ge_svg", (args...; kwargs...) -> "<svg>ge</svg>")
@@ -137,6 +136,34 @@ end
             @test Base.invokelatest(py.pyconvert, String, spec["kind"]) == String(kind)
             @test Base.invokelatest(py.pyconvert, Int, spec["argc"]) == 1
         end
+    finally
+        GenLAProblems._LAFigureSpecs[] = old_la
+    end
+end
+
+@testset "Bundle wrapper render-error contract" begin
+    la = _py_ns_lat()
+    py = GenLAProblems._ensure_pythoncall()
+    _py_setattr_lat(la, "ge_bundle", (args...; kwargs...) ->
+        Base.invokelatest(py.pydict, Dict(
+            "spec" => Base.invokelatest(py.pydict, Dict("kind" => "ge")),
+            "svg" => py.pybuiltins.None,
+            "render_error" => "latexmk failed",
+        ))
+    )
+
+    old_la = GenLAProblems._LAFigureSpecs[]
+    try
+        GenLAProblems._LAFigureSpecs[] = la
+        err = try
+            LATeachingSuite.ge_bundle([1 0; 0 1])
+            nothing
+        catch e
+            e
+        end
+        @test err isa ErrorException
+        @test occursin("render failed", sprint(showerror, err))
+        @test occursin("latexmk failed", sprint(showerror, err))
     finally
         GenLAProblems._LAFigureSpecs[] = old_la
     end

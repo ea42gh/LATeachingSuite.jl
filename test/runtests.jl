@@ -29,7 +29,6 @@ using GenLAProblems
     @test isdefined(LATeachingSuite, :show_solution)
     @test isdefined(LATeachingSuite, :solutions)
     @test isdefined(LATeachingSuite, :rhs_block)
-    @test isdefined(LATeachingSuite, :show_ge_final)
     @test isdefined(LATeachingSuite, :ge_svg)
     @test isdefined(LATeachingSuite, :qr_svg)
     @test isdefined(LATeachingSuite, :eig_svg)

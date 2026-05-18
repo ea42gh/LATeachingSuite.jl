@@ -57,6 +57,7 @@ end
             py_spec = py_bundle["spec"]
             _svg, jl_spec = jl_fn(A)
             @test _py_keys_set(py_spec) == _py_keys_set(jl_spec)
+            @test Base.invokelatest(py.pyconvert, String, py_bundle["svg"]) == _svg.svg
         end
     finally
         GenLAProblems._LAFigureSpecs[] = old_la

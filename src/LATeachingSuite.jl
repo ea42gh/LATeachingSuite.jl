@@ -27,17 +27,28 @@ function _bundle_result(dict)
     py_get = Base.invokelatest(py.pygetattr, dict, "get")
     spec = GenLAProblems._pycall(py_get, "spec")
     svg = GenLAProblems._pycall(py_get, "svg")
+    render_error = GenLAProblems._pycall(py_get, "render_error")
     if GenLAProblems._py_is_py(svg) && GenLAProblems._py_is_none(svg)
         svg = nothing
     end
-    return spec, svg
+    if GenLAProblems._py_is_py(render_error) && GenLAProblems._py_is_none(render_error)
+        render_error = nothing
+    end
+    return spec, svg, render_error
 end
 
 function _bundle_wrapper(bundle_sym::Symbol)
     return function (args...; kwargs...)
         la = GenLAProblems.load_LAFigureSpecs()
         bundle_fn = GenLAProblems._pygetattr(la, bundle_sym)
-        spec, svg = _bundle_result(GenLAProblems._pycall(bundle_fn, args...; kwargs...))
+        spec, svg, render_error = _bundle_result(GenLAProblems._pycall(bundle_fn, args...; kwargs...))
+        if render_error !== nothing
+            msg = GenLAProblems.materialize_python_value(render_error)
+            if !(msg isa AbstractString)
+                msg = string(msg)
+            end
+            error("LAFigureSpecs.$bundle_sym render failed.\n$msg")
+        end
         return GenLAProblems._show_svg(svg), spec
     end
 end
@@ -59,7 +70,6 @@ show_forwardsubstitution(args...; kwargs...) = GenLAProblems.show_forwardsubstit
 show_solution(args...; kwargs...) = GenLAProblems.show_solution(args...; kwargs...)
 solutions(args...; kwargs...) = GenLAProblems.solutions(args...; kwargs...)
 rhs_block(args...; kwargs...) = GenLAProblems.rhs_block(args...; kwargs...)
-show_ge_final(args...; kwargs...) = GenLAProblems.show_ge_final(args...; kwargs...)
 ge_svg(args...; kwargs...) = GenLAProblems._nm_ge_svg(args...; kwargs...)
 qr_svg(args...; kwargs...) = GenLAProblems._nm_qr_svg(args...; kwargs...)
 qr_figure(args...; kwargs...) = GenLAProblems._nm_gram_schmidt_qr(args...; kwargs...)
@@ -88,7 +98,7 @@ export la_version, la_build, ml_version, ml_build
 export ref!, show_layout!, show_system, create_cascade!
 export show_backsubstitution!, show_solution!
 export show_backsubstitution, show_forwardsubstitution, show_solution
-export solutions, rhs_block, show_ge_final
+export solutions, rhs_block
 export ge_svg, qr_svg, eig_svg, svd_svg, qr_figure
 export show_svg, py_show_svg, l_show_svd
 export ge_bundle, qr_bundle, eig_bundle, svd_bundle
