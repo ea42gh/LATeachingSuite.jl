@@ -30,6 +30,13 @@ The intended stack is:
 Maintain Python/Julia interoperability across any migration slice that touches
 the umbrella surface.
 
+For canonical top-level teaching/display capabilities:
+
+- require capability parity between the Julia umbrella surface and the Python
+  facade
+- when the same capability is intentionally exposed in both languages, require
+  name parity as well
+
 ## README Policy
 
 The `README.md` should carry user-facing status badges for the umbrella package.

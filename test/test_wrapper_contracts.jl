@@ -57,13 +57,14 @@ end
     @test hasmethod(LATeachingSuite.rhs_block, Tuple{Any})
     @test hasmethod(LATeachingSuite.show_ge_final, Tuple{Any,Any,Any})
 
-    ge_conv = Base.invokelatest(GenLAProblems._ensure_pythoncall().pyimport, "LAFigureSpecs.ge_convenience")
-    old_ge = Base.invokelatest(GenLAProblems._ensure_pythoncall().pygetattr, ge_conv, "ge")
+    la_ge = _py_ns_lat()
+    _py_setattr_lat(la_ge, "ge", (args...; kwargs...) -> "<svg>ge</svg>")
+    old_ge_la = GenLAProblems._LAFigureSpecs[]
     try
-        _py_setattr_lat(ge_conv, "ge", (args...; kwargs...) -> "<svg>ge</svg>")
+        GenLAProblems._LAFigureSpecs[] = la_ge
         @test LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]) isa GenLAProblems.SVGOut
     finally
-        _py_setattr_lat(ge_conv, "ge", old_ge)
+        GenLAProblems._LAFigureSpecs[] = old_ge_la
     end
 
     la = _py_ns_lat()

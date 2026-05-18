@@ -65,6 +65,9 @@ Explicitly decide which of the following are contractual:
 - spec dict field names used by Julia wrappers
 - matrix extraction return shapes
 - display/render helper semantics
+- capability parity for canonical top-level teaching/display functions
+- name parity when the same canonical top-level capability exists in both
+  Julia and Python
 
 ### 7. `GenLAProblems` Ownership Boundary
 
@@ -142,6 +145,10 @@ If no contrary decision is made, use these defaults:
 - interoperability contract:
   - preserve bundle keys, spec fields used by Julia, matrix extraction shapes,
     and display-helper semantics
+  - require capability parity for canonical top-level teaching/display
+    functions
+  - require name parity whenever the same canonical capability is exposed in
+    both languages
 
 ## Decision Log
 
@@ -164,6 +171,9 @@ Fill this section in as decisions are finalized.
 - For deprecated `nM` helpers that historically returned only rendered SVG,
   prefer the direct `*_svg` wrapper as the first replacement and use the
   `*_bundle` wrapper only when the spec payload is needed.
+- Canonical top-level teaching/display capabilities should have Python/Julia
+  capability parity, and when a capability exists canonically in both
+  languages it should also have name parity.
 
 ### Open
 

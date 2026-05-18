@@ -137,6 +137,12 @@ That means API changes should preserve or intentionally migrate:
 - return shapes for specs, bundles, and extracted matrix helpers
 - display/render semantics relied on by Julia wrappers
 
+For canonical top-level teaching/display capabilities:
+
+- require capability parity between `LATeachingSuite` and `LAFigureSpecs`
+- when the same capability is intentionally offered in both languages, require
+  name parity as well
+
 ## Legacy Surfaces
 
 The historical `nM.*` surface does not need to be preserved indefinitely.
