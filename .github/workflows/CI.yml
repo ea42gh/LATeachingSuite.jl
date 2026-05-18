@@ -46,7 +46,33 @@ jobs:
           ref: ${{ env.LALATEX_REF }}
           path: LAlatex
 
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v6
+        if: matrix.version == '1.12'
+        with:
+          repository: ea42gh/LAFigureSpecs
+          ref: ${{ env.LAFIGURESPECS_REF }}
+          path: LAFigureSpecs
+
+      - uses: actions/checkout@v6
+        if: matrix.version == '1.12'
+        with:
+          repository: ea42gh/matrixlayout
+          ref: ${{ env.MATRIXLAYOUT_REF }}
+          path: matrixlayout
+
+      - uses: actions/setup-python@v6
+        if: matrix.version == '1.12'
+        with:
+          python-version: "3.11"
+
+      - name: Install Python bridge dependencies
+        if: matrix.version == '1.12'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ./matrixlayout
+          python -m pip install ./LAFigureSpecs
+
+      - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
 
@@ -63,65 +89,8 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
 
-  bridge-smoke:
-    name: Python bridge smoke
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-      contents: read
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/checkout@v6
-        with:
-          repository: ea42gh/GenLAProblems.jl
-          ref: ${{ env.GENLAPROBLEMS_REF }}
-          path: GenLAProblems
-
-      - uses: actions/checkout@v6
-        with:
-          repository: ea42gh/LAlatex
-          ref: ${{ env.LALATEX_REF }}
-          path: LAlatex
-
-      - uses: actions/checkout@v6
-        with:
-          repository: ea42gh/LAFigureSpecs
-          ref: ${{ env.LAFIGURESPECS_REF }}
-          path: LAFigureSpecs
-
-      - uses: actions/checkout@v6
-        with:
-          repository: ea42gh/matrixlayout
-          ref: ${{ env.MATRIXLAYOUT_REF }}
-          path: matrixlayout
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Python bridge dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install ./matrixlayout
-          python -m pip install ./LAFigureSpecs
-
-      - uses: julia-actions/setup-julia@v2
-        with:
-          version: "1.12"
-
-      - uses: julia-actions/cache@v3
-
-      - name: Develop sibling Julia packages
-        shell: julia --project=. {0}
-        run: |
-          using Pkg
-          Pkg.develop(path=joinpath(pwd(), "GenLAProblems"))
-          Pkg.develop(path=joinpath(pwd(), "LAlatex"))
-          Pkg.instantiate()
-
       - name: Run Julia bridge smoke
+        if: matrix.version == '1.12'
         env:
           JULIA_PYTHONCALL_EXE: python3
         shell: julia --project=. {0}
