@@ -10,11 +10,16 @@ It provides:
 - the full `GenLAProblems` surface via re-export
 - a curated `WorkflowDisplay` submodule for notebook/display helpers
 - a curated `PythonBridge` submodule for PythonCall-backed integration helpers
+- canonical umbrella bundle wrappers:
+  `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
+- top-level umbrella bridge/display wrappers such as:
+  `load_LAFigureSpecs`, `load_matrixlayout`, `show_svg`, `py_show_svg`
 
 ## Status
 
-This package is initially a thin facade over `GenLAProblems`. As the refactor
-progresses, workflow/display and bridge code can migrate here while preserving a
+This package still re-exports `GenLAProblems`, but it now also owns part of the
+curated umbrella surface directly. As the refactor progresses, more
+workflow/display and bridge ownership can migrate here while preserving a
 single-import user experience.
 
 ## Package Roles
@@ -23,7 +28,8 @@ The current stack has four package roles:
 
 - `LATeachingSuite`
   Canonical Julia umbrella facade. This is the intended one-import entrypoint
-  for teaching workflows, display helpers, and Python bridge helpers.
+  for teaching workflows, display helpers, Python bridge helpers, and
+  umbrella-level bundle wrappers.
 - `GenLAProblems`
   Canonical Julia problem-generation core. It owns matrix/problem generation,
   reduction helpers, and math-first utilities.

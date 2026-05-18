@@ -150,6 +150,9 @@ Fill this section in as decisions are finalized.
 ### Accepted
 
 - `nM.*` need not be preserved once equivalent newer functionality exists.
+- Bundle-style Julia wrappers belong at the umbrella layer.
+  Use `LATeachingSuite.ge_bundle`, `qr_bundle`, `eig_bundle`, and `svd_bundle`
+  rather than restoring `*_tbl_bundle` mirroring at `GenLAProblems` top level.
 
 ### Open
 

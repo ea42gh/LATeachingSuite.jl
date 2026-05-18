@@ -73,11 +73,14 @@ Owns:
 - one-import Julia convenience facade
 - workflow/display helpers
 - curated Python bridge access
+- umbrella-level bundle wrappers:
+  `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
 - re-export of `GenLAProblems`
 
 Role:
 
 - canonical Julia user-facing package for teaching workflows
+- canonical home for curated Julia access to Python bundle-style helpers
 
 ## Dependency Diagram
 
@@ -104,6 +107,13 @@ Preferred imports:
 - Julia general use: `using LATeachingSuite`
 - Julia generation-only use: `using GenLAProblems`
 - Python use: `import LAFigureSpecs`
+
+Preferred bundle-style Julia entry points:
+
+- `LATeachingSuite.ge_bundle`
+- `LATeachingSuite.qr_bundle`
+- `LATeachingSuite.eig_bundle`
+- `LATeachingSuite.svd_bundle`
 
 Non-preferred but still useful:
 
@@ -139,3 +149,5 @@ The long-term direction is:
 - keep `GenLAProblems` as the Julia core generation package
 - move umbrella workflow/display/bridge responsibilities into `LATeachingSuite`
   while preserving user-visible top-level capabilities
+- prefer new Julia wrappers such as `*_bundle` at the umbrella layer rather
+  than re-expanding the `GenLAProblems` core surface
