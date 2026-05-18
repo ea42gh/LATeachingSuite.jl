@@ -141,3 +141,24 @@ end
         GenLAProblems._LAFigureSpecs[] = old_la
     end
 end
+
+@testset "Direct SVG wrapper contracts" begin
+    la = _py_ns_lat()
+    _py_setattr_lat(la, "eig_bundle", (args...; kwargs...) -> begin
+        py = GenLAProblems._ensure_pythoncall()
+        return Base.invokelatest(py.pydict, Dict("spec" => Base.invokelatest(py.pydict, Dict("kind" => "eig")), "svg" => "<svg>eig</svg>"))
+    end)
+    _py_setattr_lat(la, "svd_bundle", (args...; kwargs...) -> begin
+        py = GenLAProblems._ensure_pythoncall()
+        return Base.invokelatest(py.pydict, Dict("spec" => Base.invokelatest(py.pydict, Dict("kind" => "svd")), "svg" => "<svg>svd</svg>"))
+    end)
+
+    old_la = GenLAProblems._LAFigureSpecs[]
+    try
+        GenLAProblems._LAFigureSpecs[] = la
+        @test LATeachingSuite.eig_svg([1 0; 0 1]) isa GenLAProblems.SVGOut
+        @test LATeachingSuite.svd_svg([1 0; 0 1]) isa GenLAProblems.SVGOut
+    finally
+        GenLAProblems._LAFigureSpecs[] = old_la
+    end
+end

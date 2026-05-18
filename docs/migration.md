@@ -166,8 +166,8 @@ Fill this section in as decisions are finalized.
   `GenLAProblems`.
 - The remaining legacy `nM` QR/GE render helpers should be treated as
   deprecated in favor of:
-  `ge_svg`, `qr_svg`, `qr_figure`, `ge_bundle`, `qr_bundle`, `eig_bundle`,
-  and `svd_bundle`.
+  `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`, `qr_figure`, `ge_bundle`,
+  `qr_bundle`, `eig_bundle`, and `svd_bundle`.
 - For deprecated `nM` helpers that historically returned only rendered SVG,
   prefer the direct `*_svg` wrapper as the first replacement and use the
   `*_bundle` wrapper only when the spec payload is needed.

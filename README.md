@@ -36,7 +36,9 @@ modern umbrella names instead:
 - `nM.show_svd_tbl` -> `svd_bundle`
 - `nM.show_ge` / `nM.ge` -> `ge_svg`
 - `nM.show_qr` -> `qr_svg` or `qr_figure` if you also need computed matrices
-- `nM.qr_svg` -> `qr_svg`
+- `nM.qr_svg` / `nM.qr_tbl_svg` -> `qr_svg`
+- `nM.eig_tbl_svg` -> `eig_svg`
+- `nM.svd_tbl_svg` -> `svd_svg`
 - `nM.gram_schmidt_qr` -> `qr_figure`
 - `nM.la` -> `load_LAFigureSpecs()`
 - `nM.ml` -> `load_matrixlayout()`

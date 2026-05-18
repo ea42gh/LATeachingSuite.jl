@@ -120,6 +120,8 @@ Preferred bundle-style Julia entry points:
 - `LATeachingSuite.qr_bundle`
 - `LATeachingSuite.eig_bundle`
 - `LATeachingSuite.svd_bundle`
+- `LATeachingSuite.eig_svg`
+- `LATeachingSuite.svd_svg`
 
 Non-preferred but still useful:
 

@@ -32,6 +32,8 @@ using GenLAProblems
     @test isdefined(LATeachingSuite, :show_ge_final)
     @test isdefined(LATeachingSuite, :ge_svg)
     @test isdefined(LATeachingSuite, :qr_svg)
+    @test isdefined(LATeachingSuite, :eig_svg)
+    @test isdefined(LATeachingSuite, :svd_svg)
     @test isdefined(LATeachingSuite, :qr_figure)
     @test isdefined(LATeachingSuite, :show_svg)
     @test isdefined(LATeachingSuite, :py_show_svg)
@@ -49,6 +51,8 @@ using GenLAProblems
     @test hasmethod(LATeachingSuite.ref!, Tuple{Any})
     @test hasmethod(LATeachingSuite.show_backsubstitution, Tuple{Any,Any})
     @test hasmethod(LATeachingSuite.ge_svg, Tuple{Any})
+    @test hasmethod(LATeachingSuite.eig_svg, Tuple{Any})
+    @test hasmethod(LATeachingSuite.svd_svg, Tuple{Any})
     @test hasmethod(LATeachingSuite.qr_figure, Tuple{Any})
     @test hasmethod(LATeachingSuite.show_svg, Tuple{Any})
 end

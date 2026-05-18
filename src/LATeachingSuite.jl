@@ -63,6 +63,8 @@ show_ge_final(args...; kwargs...) = GenLAProblems.show_ge_final(args...; kwargs.
 ge_svg(args...; kwargs...) = GenLAProblems._nm_ge_svg(args...; kwargs...)
 qr_svg(args...; kwargs...) = GenLAProblems._nm_qr_svg(args...; kwargs...)
 qr_figure(args...; kwargs...) = GenLAProblems._nm_gram_schmidt_qr(args...; kwargs...)
+eig_svg(args...; kwargs...) = GenLAProblems._show_svg(first(GenLAProblems.nM.eig_tbl_svg(args...; kwargs...)))
+svd_svg(args...; kwargs...) = GenLAProblems._show_svg(first(GenLAProblems.nM.svd_tbl_svg(args...; kwargs...)))
 show_svg(args...; kwargs...) = GenLAProblems.show_svg(args...; kwargs...)
 py_show_svg(args...; kwargs...) = GenLAProblems.py_show_svg(args...; kwargs...)
 l_show_svd(args...; kwargs...) = GenLAProblems.l_show_svd(args...; kwargs...)
@@ -78,7 +80,7 @@ export ref!, show_layout!, show_system, create_cascade!
 export show_backsubstitution!, show_solution!
 export show_backsubstitution, show_forwardsubstitution, show_solution
 export solutions, rhs_block, show_ge_final
-export ge_svg, qr_svg, qr_figure
+export ge_svg, qr_svg, eig_svg, svd_svg, qr_figure
 export show_svg, py_show_svg, l_show_svd
 export ge_bundle, qr_bundle, eig_bundle, svd_bundle
 
