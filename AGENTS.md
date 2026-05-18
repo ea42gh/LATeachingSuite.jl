@@ -13,6 +13,11 @@ It should provide:
 - Python bridge helpers that reach `LAFigureSpecs` and `matrixlayout`
 - umbrella-owned bundle wrappers such as:
   `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
+- top-level ownership of the canonical Julia GE/workflow entry points such as
+  `ShowGE`, `ref!`, `show_layout!`, `show_system`, and the backsub/solution
+  helpers, even if they delegate internally to `GenLAProblems`
+- canonical modern replacements for legacy `nM` render helpers such as
+  `ge_svg`, `qr_svg`, and `qr_figure`
 
 ## Package Relationships
 
@@ -86,3 +91,8 @@ For bundle-style Julia access to Python figure helpers:
 - prefer umbrella-owned names without `_tbl`, e.g. `ge_bundle`
 - do not restore those bundle helpers as part of the intended
   `GenLAProblems` core surface
+- treat `nM.*` as deprecated compatibility surface and prefer explicit
+  umbrella names for GE/QR rendering and bundle access
+- when replacing legacy `nM` helpers, prefer direct `*_svg` umbrella helpers
+  for SVG-only workflows and `*_bundle` wrappers only when the spec payload
+  is also needed

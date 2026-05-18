@@ -72,15 +72,21 @@ Owns:
 
 - one-import Julia convenience facade
 - workflow/display helpers
+- top-level Julia ownership of `ShowGE` and related GE workflow helpers
 - curated Python bridge access
 - umbrella-level bundle wrappers:
   `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
+- canonical modern replacements for the remaining legacy `nM` QR/GE render
+  helpers:
+  `ge_svg`, `qr_svg`, `qr_figure`
 - re-export of `GenLAProblems`
 
 Role:
 
 - canonical Julia user-facing package for teaching workflows
 - canonical home for curated Julia access to Python bundle-style helpers
+- canonical top-level home for the GE workflow/display entry points, even when
+  they delegate to `GenLAProblems` internally
 
 ## Dependency Diagram
 
@@ -139,6 +145,13 @@ Migration rule:
 
 - preserve capability, not necessarily the old `nM.*` name
 - prefer modern canonical top-level APIs once equivalent functionality exists
+- for the remaining render-oriented `nM` helpers, prefer:
+  - `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
+  - `ge_svg`, `qr_svg`, `qr_figure`
+  - `load_LAFigureSpecs()`, `load_matrixlayout()`
+- when a legacy `nM` helper used to return only rendered SVG, prefer the
+  direct `*_svg` umbrella helper; use the `*_bundle` variant only when the
+  spec payload is also needed
 
 ## Migration Direction
 

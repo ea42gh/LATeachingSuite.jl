@@ -8,10 +8,15 @@ workflows built on top of `GenLAProblems`.
 It provides:
 
 - the full `GenLAProblems` surface via re-export
+- explicit top-level ownership of the canonical Julia GE/workflow surface:
+  `ShowGE`, `ref!`, `show_layout!`, `show_system`,
+  `show_backsubstitution!`, `show_solution!`
 - a curated `WorkflowDisplay` submodule for notebook/display helpers
 - a curated `PythonBridge` submodule for PythonCall-backed integration helpers
 - canonical umbrella bundle wrappers:
   `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
+- canonical modern replacements for legacy `nM` render helpers:
+  `ge_svg`, `qr_svg`, `qr_figure`
 - top-level umbrella bridge/display wrappers such as:
   `load_LAFigureSpecs`, `load_matrixlayout`, `show_svg`, `py_show_svg`
 
@@ -21,6 +26,20 @@ This package still re-exports `GenLAProblems`, but it now also owns part of the
 curated umbrella surface directly. As the refactor progresses, more
 workflow/display and bridge ownership can migrate here while preserving a
 single-import user experience.
+
+The historical `nM.*` surface should now be treated as deprecated. Prefer the
+modern umbrella names instead:
+
+- `nM.show_ge_tbl` -> `ge_svg` or `ge_bundle` if you also need the spec
+- `nM.show_qr_tbl` -> `qr_bundle`
+- `nM.show_eig_tbl` -> `eig_bundle`
+- `nM.show_svd_tbl` -> `svd_bundle`
+- `nM.show_ge` / `nM.ge` -> `ge_svg`
+- `nM.show_qr` -> `qr_svg` or `qr_figure` if you also need computed matrices
+- `nM.qr_svg` -> `qr_svg`
+- `nM.gram_schmidt_qr` -> `qr_figure`
+- `nM.la` -> `load_LAFigureSpecs()`
+- `nM.ml` -> `load_matrixlayout()`
 
 ## Package Roles
 

@@ -153,6 +153,17 @@ Fill this section in as decisions are finalized.
 - Bundle-style Julia wrappers belong at the umbrella layer.
   Use `LATeachingSuite.ge_bundle`, `qr_bundle`, `eig_bundle`, and `svd_bundle`
   rather than restoring `*_tbl_bundle` mirroring at `GenLAProblems` top level.
+- `LATeachingSuite` should own the top-level Julia GE workflow/display surface
+  such as `ShowGE`, `ref!`, `show_layout!`, `show_system`, and the
+  backsub/solution helpers, even when the implementation still delegates to
+  `GenLAProblems`.
+- The remaining legacy `nM` QR/GE render helpers should be treated as
+  deprecated in favor of:
+  `ge_svg`, `qr_svg`, `qr_figure`, `ge_bundle`, `qr_bundle`, `eig_bundle`,
+  and `svd_bundle`.
+- For deprecated `nM` helpers that historically returned only rendered SVG,
+  prefer the direct `*_svg` wrapper as the first replacement and use the
+  `*_bundle` wrapper only when the spec payload is needed.
 
 ### Open
 

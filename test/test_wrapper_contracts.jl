@@ -41,6 +41,55 @@ end
     end
 end
 
+@testset "Workflow wrapper delegation contracts" begin
+    @test LATeachingSuite.ShowGE === GenLAProblems.ShowGE
+
+    @test hasmethod(LATeachingSuite.ref!, Tuple{Any})
+    @test hasmethod(LATeachingSuite.show_layout!, Tuple{Any})
+    @test hasmethod(LATeachingSuite.show_system, Tuple{Any})
+    @test hasmethod(LATeachingSuite.create_cascade!, Tuple{Any})
+    @test hasmethod(LATeachingSuite.show_backsubstitution!, Tuple{Any})
+    @test hasmethod(LATeachingSuite.show_solution!, Tuple{Any})
+    @test hasmethod(LATeachingSuite.show_backsubstitution, Tuple{Any,Any})
+    @test hasmethod(LATeachingSuite.show_forwardsubstitution, Tuple{Any,Any})
+    @test hasmethod(LATeachingSuite.show_solution, Tuple{Any})
+    @test hasmethod(LATeachingSuite.solutions, Tuple{Any})
+    @test hasmethod(LATeachingSuite.rhs_block, Tuple{Any})
+    @test hasmethod(LATeachingSuite.show_ge_final, Tuple{Any,Any,Any})
+
+    ge_conv = Base.invokelatest(GenLAProblems._ensure_pythoncall().pyimport, "LAFigureSpecs.ge_convenience")
+    old_ge = Base.invokelatest(GenLAProblems._ensure_pythoncall().pygetattr, ge_conv, "ge")
+    try
+        _py_setattr_lat(ge_conv, "ge", (args...; kwargs...) -> "<svg>ge</svg>")
+        @test LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]) isa GenLAProblems.SVGOut
+    finally
+        _py_setattr_lat(ge_conv, "ge", old_ge)
+    end
+
+    la = _py_ns_lat()
+    ml = _py_ns_lat()
+    _py_setattr_lat(la, "gram_schmidt_qr_matrices", (A; kwargs...) -> Any[[nothing, nothing], [nothing, nothing]])
+    _py_setattr_lat(la, "qr_tbl_spec_from_matrices", (mats; kwargs...) -> begin
+        py = GenLAProblems._ensure_pythoncall()
+        Base.invokelatest(py.pydict, Dict("kind" => "qr"))
+    end)
+    _py_setattr_lat(la, "qr_svg", (args...; kwargs...) -> "<svg>qr-direct</svg>")
+    _py_setattr_lat(ml, "render_qr_svg", (; kwargs...) -> "<svg>qr</svg>")
+    old_la = GenLAProblems._LAFigureSpecs[]
+    old_ml = GenLAProblems._matrixlayout[]
+    try
+        GenLAProblems._LAFigureSpecs[] = la
+        GenLAProblems._matrixlayout[] = ml
+        svg, mats = LATeachingSuite.qr_figure([1 0; 0 1])
+        @test svg isa GenLAProblems.SVGOut
+        @test mats !== nothing
+        @test LATeachingSuite.qr_svg([1 0; 0 1]) isa GenLAProblems.SVGOut
+    finally
+        GenLAProblems._LAFigureSpecs[] = old_la
+        GenLAProblems._matrixlayout[] = old_ml
+    end
+end
+
 @testset "Display helper wrapper contracts" begin
     @test_throws ErrorException LATeachingSuite.py_show_svg(123)
     @test_throws ErrorException LATeachingSuite.show_svg(123)
