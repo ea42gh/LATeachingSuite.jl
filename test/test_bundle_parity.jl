@@ -38,20 +38,20 @@ end
         end
     end
 
-    _py_setattr_bundle(la, "ge_tbl_bundle", fake_bundle("ge"))
-    _py_setattr_bundle(la, "eig_tbl_bundle", fake_bundle("eig"))
-    _py_setattr_bundle(la, "svd_tbl_bundle", fake_bundle("svd"))
-    _py_setattr_bundle(la, "qr_tbl_bundle", fake_bundle("qr"))
+    _py_setattr_bundle(la, "ge_bundle", fake_bundle("ge"))
+    _py_setattr_bundle(la, "eig_bundle", fake_bundle("eig"))
+    _py_setattr_bundle(la, "svd_bundle", fake_bundle("svd"))
+    _py_setattr_bundle(la, "qr_bundle", fake_bundle("qr"))
 
     old_la = GenLAProblems._LAFigureSpecs[]
     A = [1 0; 0 1]
     try
         GenLAProblems._LAFigureSpecs[] = la
         for (bundle_sym, jl_fn) in [
-            (:ge_tbl_bundle, LATeachingSuite.ge_bundle),
-            (:eig_tbl_bundle, LATeachingSuite.eig_bundle),
-            (:svd_tbl_bundle, LATeachingSuite.svd_bundle),
-            (:qr_tbl_bundle, LATeachingSuite.qr_bundle),
+            (:ge_bundle, LATeachingSuite.ge_bundle),
+            (:eig_bundle, LATeachingSuite.eig_bundle),
+            (:svd_bundle, LATeachingSuite.svd_bundle),
+            (:qr_bundle, LATeachingSuite.qr_bundle),
         ]
             py_bundle = GenLAProblems._pycall(GenLAProblems._pygetattr(la, bundle_sym), A)
             py_spec = py_bundle["spec"]

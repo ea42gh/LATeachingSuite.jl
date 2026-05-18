@@ -21,6 +21,8 @@ jobs:
   tests:
     name: Julia ${{ matrix.version }}
     runs-on: ubuntu-latest
+    env:
+      JULIA_PYTHONCALL_EXE: python3
     permissions:
       actions: write
       contents: read

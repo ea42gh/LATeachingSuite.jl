@@ -66,10 +66,10 @@ qr_figure(args...; kwargs...) = GenLAProblems._nm_gram_schmidt_qr(args...; kwarg
 show_svg(args...; kwargs...) = GenLAProblems.show_svg(args...; kwargs...)
 py_show_svg(args...; kwargs...) = GenLAProblems.py_show_svg(args...; kwargs...)
 l_show_svd(args...; kwargs...) = GenLAProblems.l_show_svd(args...; kwargs...)
-ge_bundle(args...; kwargs...) = _bundle_wrapper(:ge_tbl_bundle)(args...; kwargs...)
-qr_bundle(args...; kwargs...) = _bundle_wrapper(:qr_tbl_bundle)(args...; kwargs...)
-eig_bundle(args...; kwargs...) = _bundle_wrapper(:eig_tbl_bundle)(args...; kwargs...)
-svd_bundle(args...; kwargs...) = _bundle_wrapper(:svd_tbl_bundle)(args...; kwargs...)
+ge_bundle(args...; kwargs...) = _bundle_wrapper(:ge_bundle)(args...; kwargs...)
+qr_bundle(args...; kwargs...) = _bundle_wrapper(:qr_bundle)(args...; kwargs...)
+eig_bundle(args...; kwargs...) = _bundle_wrapper(:eig_bundle)(args...; kwargs...)
+svd_bundle(args...; kwargs...) = _bundle_wrapper(:svd_bundle)(args...; kwargs...)
 
 export WorkflowDisplay, PythonBridge, ShowGE
 export load_LAFigureSpecs, load_matrixlayout

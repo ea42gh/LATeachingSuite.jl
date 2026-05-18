@@ -1,4 +1,14 @@
 using Test
+
+let
+    if !haskey(ENV, "JULIA_PYTHONCALL_EXE")
+        py = get(ENV, "PYTHON", Sys.which("python3"))
+        if py !== nothing
+            ENV["JULIA_PYTHONCALL_EXE"] = py
+        end
+    end
+end
+
 using LATeachingSuite
 using GenLAProblems
 

@@ -58,7 +58,7 @@ end
     @test hasmethod(LATeachingSuite.show_ge_final, Tuple{Any,Any,Any})
 
     la_ge = _py_ns_lat()
-    _py_setattr_lat(la_ge, "ge", (args...; kwargs...) -> "<svg>ge</svg>")
+    _py_setattr_lat(la_ge, "ge_svg", (args...; kwargs...) -> "<svg>ge</svg>")
     old_ge_la = GenLAProblems._LAFigureSpecs[]
     try
         GenLAProblems._LAFigureSpecs[] = la_ge
@@ -113,10 +113,10 @@ end
         end
     end
 
-    _py_setattr_lat(la, "ge_tbl_bundle", fake_bundle(:ge))
-    _py_setattr_lat(la, "qr_tbl_bundle", fake_bundle(:qr))
-    _py_setattr_lat(la, "eig_tbl_bundle", fake_bundle(:eig))
-    _py_setattr_lat(la, "svd_tbl_bundle", fake_bundle(:svd))
+    _py_setattr_lat(la, "ge_bundle", fake_bundle(:ge))
+    _py_setattr_lat(la, "qr_bundle", fake_bundle(:qr))
+    _py_setattr_lat(la, "eig_bundle", fake_bundle(:eig))
+    _py_setattr_lat(la, "svd_bundle", fake_bundle(:svd))
 
     old_la = GenLAProblems._LAFigureSpecs[]
     try
