@@ -63,8 +63,17 @@ show_ge_final(args...; kwargs...) = GenLAProblems.show_ge_final(args...; kwargs.
 ge_svg(args...; kwargs...) = GenLAProblems._nm_ge_svg(args...; kwargs...)
 qr_svg(args...; kwargs...) = GenLAProblems._nm_qr_svg(args...; kwargs...)
 qr_figure(args...; kwargs...) = GenLAProblems._nm_gram_schmidt_qr(args...; kwargs...)
-eig_svg(args...; kwargs...) = GenLAProblems._show_svg(first(GenLAProblems.nM.eig_tbl_svg(args...; kwargs...)))
-svd_svg(args...; kwargs...) = GenLAProblems._show_svg(first(GenLAProblems.nM.svd_tbl_svg(args...; kwargs...)))
+function eig_svg(args...; kwargs...)
+    la = GenLAProblems.load_LAFigureSpecs()
+    svg_fn = GenLAProblems._pygetattr(la, :eig_svg)
+    return GenLAProblems._show_svg(GenLAProblems._pycall(svg_fn, args...; kwargs...))
+end
+
+function svd_svg(args...; kwargs...)
+    la = GenLAProblems.load_LAFigureSpecs()
+    svg_fn = GenLAProblems._pygetattr(la, :svd_svg)
+    return GenLAProblems._show_svg(GenLAProblems._pycall(svg_fn, args...; kwargs...))
+end
 show_svg(args...; kwargs...) = GenLAProblems.show_svg(args...; kwargs...)
 py_show_svg(args...; kwargs...) = GenLAProblems.py_show_svg(args...; kwargs...)
 l_show_svd(args...; kwargs...) = GenLAProblems.l_show_svd(args...; kwargs...)
