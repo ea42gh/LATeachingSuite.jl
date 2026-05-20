@@ -64,6 +64,11 @@ la_version() = GenLAProblems.la_version()
 la_build() = GenLAProblems.la_build()
 ml_version() = GenLAProblems.ml_version()
 ml_build() = GenLAProblems.ml_build()
+split_R_RHS(args...; kwargs...) = GenLAProblems.split_R_RHS(args...; kwargs...)
+particular_solution(args...; kwargs...) = GenLAProblems.particular_solution(args...; kwargs...)
+homogeneous_solutions(args...; kwargs...) = GenLAProblems.homogeneous_solutions(args...; kwargs...)
+normal_eq_reduce_to_ref(args...; kwargs...) = GenLAProblems.normal_eq_reduce_to_ref(args...; kwargs...)
+reduce_to_ref(args...; kwargs...) = GenLAProblems.reduce_to_ref(args...; kwargs...)
 ref!(args...; kwargs...) = GenLAProblems.ref!(args...; kwargs...)
 show_layout!(args...; kwargs...) = GenLAProblems.show_layout!(args...; kwargs...)
 show_system(args...; kwargs...) = GenLAProblems.show_system(args...; kwargs...)
@@ -100,6 +105,8 @@ svd_bundle(args...; kwargs...) = _svd_bundle(args...; kwargs...)
 export WorkflowDisplay, PythonBridge, ShowGE
 export load_LAFigureSpecs, load_matrixlayout
 export la_version, la_build, ml_version, ml_build
+export split_R_RHS, particular_solution, homogeneous_solutions
+export normal_eq_reduce_to_ref, reduce_to_ref
 export ref!, show_layout!, show_system, create_cascade!
 export show_backsubstitution!, show_solution!
 export show_backsubstitution, show_forwardsubstitution, show_solution
