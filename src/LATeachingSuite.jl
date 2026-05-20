@@ -1,14 +1,82 @@
 module LATeachingSuite
 
 using Reexport
+using LinearAlgebra
+using LAlatex
+using LaTeXStrings: LaTeXString
+
+let pycall_exe = get(ENV, "JULIA_PYTHONCALL_EXE", "")
+    if isempty(pycall_exe) || !isfile(pycall_exe)
+        py = get(ENV, "PYTHON", "")
+        if isempty(py) || !isfile(py)
+            py = something(Sys.which("python3"), "")
+        end
+        ENV["JULIA_PYTHONCALL_EXE"] = py
+    end
+end
+
+using PythonCall
 
 @reexport using GenLAProblems
+
+ensure_pythoncall!() = GenLAProblems.ensure_pythoncall!()
+load_LAFigureSpecs() = GenLAProblems.load_LAFigureSpecs()
+load_matrixlayout() = GenLAProblems.load_matrixlayout()
+la_version() = GenLAProblems.la_version()
+la_build() = GenLAProblems.la_build()
+ml_version() = GenLAProblems.ml_version()
+ml_build() = GenLAProblems.ml_build()
+materialize_python_value(x) = GenLAProblems.materialize_python_value(x)
+mm_to_px(mm::Real) = GenLAProblems.mm_to_px(mm)
+px_to_mm(px::Real) = GenLAProblems.px_to_mm(px)
+
+is_none_val(x) = GenLAProblems.is_none_val(x)
+_ensure_pythoncall() = GenLAProblems._ensure_pythoncall()
+_pyimport(name::String) = GenLAProblems._pyimport(name)
+_pycall(f, args...; kwargs...) = GenLAProblems._pycall(f, args...; kwargs...)
+_pygetattr(obj, name::Symbol) = GenLAProblems._pygetattr(obj, name)
+_pygetattr_fallback(obj, name::Symbol, mod::String) = GenLAProblems._pygetattr_fallback(obj, name, mod)
+_py_is_none(x) = GenLAProblems._py_is_none(x)
+_py_is_py(x) = GenLAProblems._py_is_py(x)
+_ensure_blockarrays() = GenLAProblems._ensure_blockarrays()
+_ensure_symbolics() = GenLAProblems._ensure_symbolics()
+_normalize_render_opts(args...; kwargs...) = GenLAProblems._normalize_render_opts(args...; kwargs...)
+
+const _LAFigureSpecs = GenLAProblems._LAFigureSpecs
+const _matrixlayout = GenLAProblems._matrixlayout
+const _sympy = GenLAProblems._sympy
+
+const sympy = GenLAProblems.sympy
+const nM = GenLAProblems.nM
+
+include("DisplayInterop.jl")
+include("SolveProblems.jl")
+include("ge.jl")
 
 module WorkflowDisplay
 
 using Reexport
 
-@reexport using GenLAProblems.WorkflowDisplay
+@reexport using ..LATeachingSuite:
+    ShowGE,
+    ref!,
+    show_layout!,
+    show_system,
+    create_cascade!,
+    show_backsubstitution!,
+    show_solution!,
+    show_backsubstitution,
+    show_forwardsubstitution,
+    show_solution,
+    solutions,
+    rhs_block,
+    show_ge_final,
+    py_show_svg,
+    show_svg,
+    l_show_svd,
+    nM,
+    mm_to_px,
+    px_to_mm
 
 end
 
@@ -16,22 +84,28 @@ module PythonBridge
 
 using Reexport
 
-@reexport using GenLAProblems.PythonBridge
+@reexport using ..LATeachingSuite:
+    ensure_pythoncall!,
+    load_LAFigureSpecs,
+    load_matrixlayout,
+    la_version,
+    la_build,
+    ml_version,
+    ml_build,
+    materialize_python_value,
+    sympy
 
 end
 
-const ShowGE = GenLAProblems.ShowGE
-
 function _bundle_result(dict)
-    py = GenLAProblems._ensure_pythoncall()
-    py_get = Base.invokelatest(py.pygetattr, dict, "get")
-    spec = GenLAProblems._pycall(py_get, "spec")
-    svg = GenLAProblems._pycall(py_get, "svg")
-    render_error = GenLAProblems._pycall(py_get, "render_error")
-    if GenLAProblems._py_is_py(svg) && GenLAProblems._py_is_none(svg)
+    py_get = Base.invokelatest(PythonCall.pygetattr, dict, "get")
+    spec = _pycall(py_get, "spec")
+    svg = _pycall(py_get, "svg")
+    render_error = _pycall(py_get, "render_error")
+    if _py_is_py(svg) && _py_is_none(svg)
         svg = nothing
     end
-    if GenLAProblems._py_is_py(render_error) && GenLAProblems._py_is_none(render_error)
+    if _py_is_py(render_error) && _py_is_none(render_error)
         render_error = nothing
     end
     return spec, svg, render_error
@@ -39,17 +113,17 @@ end
 
 function _bundle_wrapper(bundle_sym::Symbol)
     return function (args...; kwargs...)
-        la = GenLAProblems.load_LAFigureSpecs()
-        bundle_fn = GenLAProblems._pygetattr(la, bundle_sym)
-        spec, svg, render_error = _bundle_result(GenLAProblems._pycall(bundle_fn, args...; kwargs...))
+        la = load_LAFigureSpecs()
+        bundle_fn = _pygetattr(la, bundle_sym)
+        spec, svg, render_error = _bundle_result(_pycall(bundle_fn, args...; kwargs...))
         if render_error !== nothing
-            msg = GenLAProblems.materialize_python_value(render_error)
+            msg = materialize_python_value(render_error)
             if !(msg isa AbstractString)
                 msg = string(msg)
             end
             error("LAFigureSpecs.$bundle_sym render failed.\n$msg")
         end
-        return GenLAProblems._show_svg(svg), spec
+        return _show_svg(svg), spec
     end
 end
 
@@ -58,45 +132,22 @@ const _qr_bundle = _bundle_wrapper(:qr_bundle)
 const _eig_bundle = _bundle_wrapper(:eig_bundle)
 const _svd_bundle = _bundle_wrapper(:svd_bundle)
 
-load_LAFigureSpecs() = GenLAProblems.load_LAFigureSpecs()
-load_matrixlayout() = GenLAProblems.load_matrixlayout()
-la_version() = GenLAProblems.la_version()
-la_build() = GenLAProblems.la_build()
-ml_version() = GenLAProblems.ml_version()
-ml_build() = GenLAProblems.ml_build()
-split_R_RHS(args...; kwargs...) = GenLAProblems.split_R_RHS(args...; kwargs...)
-particular_solution(args...; kwargs...) = GenLAProblems.particular_solution(args...; kwargs...)
-homogeneous_solutions(args...; kwargs...) = GenLAProblems.homogeneous_solutions(args...; kwargs...)
-normal_eq_reduce_to_ref(args...; kwargs...) = GenLAProblems.normal_eq_reduce_to_ref(args...; kwargs...)
-reduce_to_ref(args...; kwargs...) = GenLAProblems.reduce_to_ref(args...; kwargs...)
-ref!(args...; kwargs...) = GenLAProblems.ref!(args...; kwargs...)
-show_layout!(args...; kwargs...) = GenLAProblems.show_layout!(args...; kwargs...)
-show_system(args...; kwargs...) = GenLAProblems.show_system(args...; kwargs...)
-create_cascade!(args...; kwargs...) = GenLAProblems.create_cascade!(args...; kwargs...)
-show_backsubstitution!(args...; kwargs...) = GenLAProblems.show_backsubstitution!(args...; kwargs...)
-show_solution!(args...; kwargs...) = GenLAProblems.show_solution!(args...; kwargs...)
-show_backsubstitution(args...; kwargs...) = GenLAProblems.show_backsubstitution(args...; kwargs...)
-show_forwardsubstitution(args...; kwargs...) = GenLAProblems.show_forwardsubstitution(args...; kwargs...)
-show_solution(args...; kwargs...) = GenLAProblems.show_solution(args...; kwargs...)
-solutions(args...; kwargs...) = GenLAProblems.solutions(args...; kwargs...)
-rhs_block(args...; kwargs...) = GenLAProblems.rhs_block(args...; kwargs...)
-ge_svg(args...; kwargs...) = GenLAProblems._nm_ge_svg(args...; kwargs...)
+ge_svg(args...; kwargs...) = matrixlayout_ge(args...; kwargs...)
 qr_svg(args...; kwargs...) = GenLAProblems._nm_qr_svg(args...; kwargs...)
 qr_figure(args...; kwargs...) = GenLAProblems._nm_gram_schmidt_qr(args...; kwargs...)
+
 function eig_svg(args...; kwargs...)
-    la = GenLAProblems.load_LAFigureSpecs()
-    svg_fn = GenLAProblems._pygetattr(la, :eig_svg)
-    return GenLAProblems._show_svg(GenLAProblems._pycall(svg_fn, args...; kwargs...))
+    la = load_LAFigureSpecs()
+    svg_fn = _pygetattr(la, :eig_svg)
+    return _show_svg(_pycall(svg_fn, args...; kwargs...))
 end
 
 function svd_svg(args...; kwargs...)
-    la = GenLAProblems.load_LAFigureSpecs()
-    svg_fn = GenLAProblems._pygetattr(la, :svd_svg)
-    return GenLAProblems._show_svg(GenLAProblems._pycall(svg_fn, args...; kwargs...))
+    la = load_LAFigureSpecs()
+    svg_fn = _pygetattr(la, :svd_svg)
+    return _show_svg(_pycall(svg_fn, args...; kwargs...))
 end
-show_svg(args...; kwargs...) = GenLAProblems.show_svg(args...; kwargs...)
-py_show_svg(args...; kwargs...) = GenLAProblems.py_show_svg(args...; kwargs...)
-l_show_svd(args...; kwargs...) = GenLAProblems.l_show_svd(args...; kwargs...)
+
 ge_bundle(args...; kwargs...) = _ge_bundle(args...; kwargs...)
 qr_bundle(args...; kwargs...) = _qr_bundle(args...; kwargs...)
 eig_bundle(args...; kwargs...) = _eig_bundle(args...; kwargs...)

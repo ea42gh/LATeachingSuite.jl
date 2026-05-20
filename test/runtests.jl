@@ -30,6 +30,7 @@ end
 
 using LATeachingSuite
 using GenLAProblems
+using LinearAlgebra
 
 @testset "LATeachingSuite" begin
     @test isdefined(LATeachingSuite, :ShowGE)
@@ -66,13 +67,26 @@ using GenLAProblems
     @test isdefined(LATeachingSuite.PythonBridge, :load_LAFigureSpecs)
     @test hasmethod(LATeachingSuite.load_LAFigureSpecs, Tuple{})
     @test hasmethod(LATeachingSuite.load_matrixlayout, Tuple{})
-    @test hasmethod(LATeachingSuite.ref!, Tuple{Any})
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.ref!))
     @test hasmethod(LATeachingSuite.show_backsubstitution, Tuple{Any,Any})
     @test hasmethod(LATeachingSuite.ge_svg, Tuple{Any})
     @test hasmethod(LATeachingSuite.eig_svg, Tuple{Any})
     @test hasmethod(LATeachingSuite.svd_svg, Tuple{Any})
     @test hasmethod(LATeachingSuite.qr_figure, Tuple{Any})
     @test hasmethod(LATeachingSuite.show_svg, Tuple{Any})
+
+    A = Rational{Int}.([1 2; 3 4])
+    b = Rational{Int}.([5, 6])
+    pb = ShowGE(A, b)
+    ref!(pb; gj=true)
+    xp, xh = solutions(pb)
+    @test size(xp, 1) == size(A, 2)
+    @test size(rhs_block(pb), 2) == 1
+    @test xh isa AbstractMatrix
+
+    mats, pivots, _ = reduce_to_ref(A; gj=true)
+    @test size(mats[end][end]) == size(A)
+    @test pivots == [1, 2]
 end
 
 include("test_wrapper_contracts.jl")

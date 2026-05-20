@@ -42,26 +42,26 @@ end
 end
 
 @testset "Workflow wrapper delegation contracts" begin
-    @test LATeachingSuite.ShowGE === GenLAProblems.ShowGE
+    @test LATeachingSuite.ShowGE !== GenLAProblems.ShowGE
 
-    @test hasmethod(LATeachingSuite.ref!, Tuple{Any})
-    @test hasmethod(LATeachingSuite.show_layout!, Tuple{Any})
-    @test hasmethod(LATeachingSuite.show_system, Tuple{Any})
-    @test hasmethod(LATeachingSuite.create_cascade!, Tuple{Any})
-    @test hasmethod(LATeachingSuite.show_backsubstitution!, Tuple{Any})
-    @test hasmethod(LATeachingSuite.show_solution!, Tuple{Any})
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.ref!))
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.show_layout!))
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.show_system))
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.create_cascade!))
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.show_backsubstitution!))
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.show_solution!))
     @test hasmethod(LATeachingSuite.show_backsubstitution, Tuple{Any,Any})
     @test hasmethod(LATeachingSuite.show_forwardsubstitution, Tuple{Any,Any})
     @test hasmethod(LATeachingSuite.show_solution, Tuple{Any})
-    @test hasmethod(LATeachingSuite.solutions, Tuple{Any})
-    @test hasmethod(LATeachingSuite.rhs_block, Tuple{Any})
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.solutions))
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.rhs_block))
 
     la_ge = _py_ns_lat()
     _py_setattr_lat(la_ge, "ge_svg", (args...; kwargs...) -> "<svg>ge</svg>")
     old_ge_la = GenLAProblems._LAFigureSpecs[]
     try
         GenLAProblems._LAFigureSpecs[] = la_ge
-        @test LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]) isa GenLAProblems.SVGOut
+        @test LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]) isa LATeachingSuite.SVGOut
     finally
         GenLAProblems._LAFigureSpecs[] = old_ge_la
     end
@@ -128,7 +128,7 @@ end
             (:svd, LATeachingSuite.svd_bundle),
         ]
             svg, spec = fn([1 0; 0 1]; output_dir="/tmp/lat", render_opts=Dict("crop" => "tight"))
-            @test svg isa GenLAProblems.SVGOut
+            @test svg isa LATeachingSuite.SVGOut
             @test occursin(string(kind), svg.svg)
             @test seen[kind][:output_dir] == "/tmp/lat"
             @test haskey(seen[kind], :render_opts)
@@ -177,8 +177,8 @@ end
     old_la = GenLAProblems._LAFigureSpecs[]
     try
         GenLAProblems._LAFigureSpecs[] = la
-        @test LATeachingSuite.eig_svg([1 0; 0 1]) isa GenLAProblems.SVGOut
-        @test LATeachingSuite.svd_svg([1 0; 0 1]) isa GenLAProblems.SVGOut
+        @test LATeachingSuite.eig_svg([1 0; 0 1]) isa LATeachingSuite.SVGOut
+        @test LATeachingSuite.svd_svg([1 0; 0 1]) isa LATeachingSuite.SVGOut
     finally
         GenLAProblems._LAFigureSpecs[] = old_la
     end

@@ -22,10 +22,10 @@ It provides:
 
 ## Status
 
-This package still re-exports `GenLAProblems`, but it now also owns part of the
-curated umbrella surface directly. As the refactor progresses, more
-workflow/display and bridge ownership can migrate here while preserving a
-single-import user experience.
+This package still re-exports `GenLAProblems`, but the GE workflow source now
+also lives here directly. `ShowGE`, reduction helpers, and the Julia-side GE
+workflow/display path are no longer just forwarded wrappers around
+`GenLAProblems`.
 
 The historical `nM.*` surface should now be treated as deprecated. Prefer the
 modern umbrella names instead:

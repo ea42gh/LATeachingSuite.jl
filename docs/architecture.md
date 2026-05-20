@@ -85,8 +85,8 @@ Role:
 
 - canonical Julia user-facing package for teaching workflows
 - canonical home for curated Julia access to Python bundle-style helpers
-- canonical top-level home for the GE workflow/display entry points, even when
-  they delegate to `GenLAProblems` internally
+- canonical top-level and source-level home for the GE workflow/display entry
+  points
 
 ## Dependency Diagram
 
