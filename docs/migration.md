@@ -74,16 +74,15 @@ Explicitly decide which of the following are contractual:
 Confirm which families remain in the core package long-term:
 
 - problem generation
-- reduction helpers
 - QR/eigen/SVD generation
-- exact arithmetic helpers
-- optional symbolic helpers
+- exact arithmetic helpers that directly support generators
 
 ### 8. `LATeachingSuite` Ownership Boundary
 
 Confirm which families belong in the umbrella package long-term:
 
 - `ShowGE`
+- reduction helpers
 - `show_*` workflow/display helpers
 - `nM`
 - Python bridge helpers

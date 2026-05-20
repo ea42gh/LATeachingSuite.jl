@@ -52,8 +52,8 @@ The current stack has four package roles:
   for teaching workflows, display helpers, Python bridge helpers, and
   umbrella-level bundle wrappers.
 - `GenLAProblems`
-  Canonical Julia problem-generation core. It owns matrix/problem generation,
-  reduction helpers, and math-first utilities.
+  Canonical Julia problem-generation core. It owns matrix/problem generation
+  and supporting matrix constructors.
 - `LAFigureSpecs`
   Canonical Python algorithm/spec facade. It builds GE/QR/eigen/SVD specs and
   convenience render workflows on top of `matrixlayout`.

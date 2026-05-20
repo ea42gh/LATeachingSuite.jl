@@ -57,20 +57,20 @@ Role:
 Owns:
 
 - matrix/problem generation
-- reduction helpers
-- exact arithmetic and math-first utilities
+- supporting matrix constructors used by those generators
+- exact arithmetic and math-first utilities that directly support generation
 
 Role:
 
-- canonical Julia core package
-- should trend toward generation/math concerns rather than umbrella workflow
-  ownership
+- canonical Julia generation package
+- should avoid workflow/display and reduction-algorithm ownership
 
 ### `LATeachingSuite`
 
 Owns:
 
 - one-import Julia convenience facade
+- reduction helpers
 - workflow/display helpers
 - top-level Julia ownership of `ShowGE` and related GE workflow helpers
 - curated Python bridge access

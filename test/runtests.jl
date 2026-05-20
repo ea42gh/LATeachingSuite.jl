@@ -1,12 +1,31 @@
 using Test
 
 let
-    if !haskey(ENV, "JULIA_PYTHONCALL_EXE")
-        py = get(ENV, "PYTHON", Sys.which("python3"))
-        if py !== nothing
-            ENV["JULIA_PYTHONCALL_EXE"] = py
+    pycall_exe = get(ENV, "JULIA_PYTHONCALL_EXE", "")
+    if isempty(pycall_exe) || !isfile(pycall_exe)
+        py = get(ENV, "PYTHON", "")
+        if isempty(py) || !isfile(py)
+            py = something(Sys.which("python3"), "")
+        end
+        ENV["JULIA_PYTHONCALL_EXE"] = py
+    end
+    ENV["JULIA_CONDAPKG_BACKEND"] = get(ENV, "JULIA_CONDAPKG_BACKEND", "Null")
+    ENV["CONDAPKG_BACKEND"] = get(ENV, "CONDAPKG_BACKEND", "Null")
+
+    repo = normpath(joinpath(@__DIR__, "..", ".."))
+    py_paths = [
+        joinpath(repo, ".pydeps"),
+        joinpath(repo, "LAFigureSpecs"),
+        joinpath(repo, "matrixlayout"),
+    ]
+    existing = get(ENV, "PYTHONPATH", "")
+    parts = isempty(existing) ? String[] : split(existing, ':')
+    for p in reverse(py_paths)
+        if !(p in parts)
+            pushfirst!(parts, p)
         end
     end
+    ENV["PYTHONPATH"] = join(parts, ':')
 end
 
 using LATeachingSuite
