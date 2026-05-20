@@ -133,7 +133,7 @@ const _eig_bundle = _bundle_wrapper(:eig_bundle)
 const _svd_bundle = _bundle_wrapper(:svd_bundle)
 
 ge_svg(args...; kwargs...) = matrixlayout_ge(args...; kwargs...)
-qr_svg(args...; kwargs...) = GenLAProblems._nm_qr_svg(args...; kwargs...)
+qr_svg(args...; kwargs...) = first(qr_bundle(args...; kwargs...))
 qr_figure(args...; kwargs...) = GenLAProblems._nm_gram_schmidt_qr(args...; kwargs...)
 
 function eig_svg(args...; kwargs...)
