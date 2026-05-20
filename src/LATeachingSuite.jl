@@ -53,6 +53,11 @@ function _bundle_wrapper(bundle_sym::Symbol)
     end
 end
 
+const _ge_bundle = _bundle_wrapper(:ge_bundle)
+const _qr_bundle = _bundle_wrapper(:qr_bundle)
+const _eig_bundle = _bundle_wrapper(:eig_bundle)
+const _svd_bundle = _bundle_wrapper(:svd_bundle)
+
 load_LAFigureSpecs() = GenLAProblems.load_LAFigureSpecs()
 load_matrixlayout() = GenLAProblems.load_matrixlayout()
 la_version() = GenLAProblems.la_version()
@@ -87,10 +92,10 @@ end
 show_svg(args...; kwargs...) = GenLAProblems.show_svg(args...; kwargs...)
 py_show_svg(args...; kwargs...) = GenLAProblems.py_show_svg(args...; kwargs...)
 l_show_svd(args...; kwargs...) = GenLAProblems.l_show_svd(args...; kwargs...)
-ge_bundle(args...; kwargs...) = _bundle_wrapper(:ge_bundle)(args...; kwargs...)
-qr_bundle(args...; kwargs...) = _bundle_wrapper(:qr_bundle)(args...; kwargs...)
-eig_bundle(args...; kwargs...) = _bundle_wrapper(:eig_bundle)(args...; kwargs...)
-svd_bundle(args...; kwargs...) = _bundle_wrapper(:svd_bundle)(args...; kwargs...)
+ge_bundle(args...; kwargs...) = _ge_bundle(args...; kwargs...)
+qr_bundle(args...; kwargs...) = _qr_bundle(args...; kwargs...)
+eig_bundle(args...; kwargs...) = _eig_bundle(args...; kwargs...)
+svd_bundle(args...; kwargs...) = _svd_bundle(args...; kwargs...)
 
 export WorkflowDisplay, PythonBridge, ShowGE
 export load_LAFigureSpecs, load_matrixlayout
