@@ -1,7 +1,3 @@
-ENV["JULIA_PYTHONCALL_EXE"] = something(Sys.which("python3"), get(ENV, "JULIA_PYTHONCALL_EXE", "python3"))
-ENV["JULIA_CONDAPKG_BACKEND"] = get(ENV, "JULIA_CONDAPKG_BACKEND", "Null")
-ENV["CONDAPKG_BACKEND"] = get(ENV, "CONDAPKG_BACKEND", "Null")
-
 using LATeachingSuite, LAlatex, LinearAlgebra, LaTeXStrings, Random
 
 Random.seed!(42)
