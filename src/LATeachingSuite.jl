@@ -17,6 +17,7 @@ end
 
 using PythonCall
 
+@reexport using LAlatex
 @reexport using GenLAProblems
 
 ensure_pythoncall!() = GenLAProblems.ensure_pythoncall!()
