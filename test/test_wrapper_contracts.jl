@@ -42,7 +42,7 @@ end
 end
 
 @testset "Workflow wrapper delegation contracts" begin
-    @test LATeachingSuite.ShowGE !== GenLAProblems.ShowGE
+    @test !isdefined(GenLAProblems, :ShowGE)
 
     @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.ref!))
     @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.show_layout!))

@@ -15,20 +15,12 @@ It provides:
 - a curated `PythonBridge` submodule for PythonCall-backed integration helpers
 - canonical umbrella bundle wrappers:
   `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
-- canonical modern replacements for legacy `nM` render helpers:
+- canonical modern replacements for `nM` render helpers:
   `ge_svg`, `qr_svg`, `qr_figure`
 - top-level umbrella bridge/display wrappers such as:
   `load_LAFigureSpecs`, `load_matrixlayout`, `show_svg`, `py_show_svg`
 
-## Status
-
-This package still re-exports `GenLAProblems`, but the GE workflow source now
-also lives here directly. `ShowGE`, reduction helpers, and the Julia-side GE
-workflow/display path are no longer just forwarded wrappers around
-`GenLAProblems`.
-
-The historical `nM.*` surface should now be treated as deprecated. Prefer the
-modern umbrella names instead:
+The `nM.*` surface is a compatibility layer. Prefer the umbrella names instead:
 
 - `nM.show_ge_tbl` -> `ge_svg` or `ge_bundle` if you also need the spec
 - `nM.show_qr_tbl` -> `qr_bundle`
@@ -91,5 +83,4 @@ LATeachingSuite -> GenLAProblems / PythonBridge -> LAFigureSpecs -> matrixlayout
 ## Architecture Notes
 
 See [docs/architecture.md](docs/architecture.md) for a more detailed description
-of package responsibilities, interoperability expectations, and migration
-direction.
+of package responsibilities and interoperability expectations.

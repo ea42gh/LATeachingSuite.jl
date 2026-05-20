@@ -3,8 +3,7 @@
 `LATeachingSuite` is the umbrella package for the teaching-oriented linear
 algebra stack in this monorepo.
 
-This document records the roles of the packages, their interrelationships, and
-the intended long-term boundaries.
+This document records the roles of the packages and their interrelationships.
 
 ## Layer Overview
 
@@ -76,7 +75,7 @@ Owns:
 - curated Python bridge access
 - umbrella-level bundle wrappers:
   `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
-- canonical modern replacements for the remaining legacy `nM` QR/GE render
+- canonical modern replacements for the `nM` QR/GE render
   helpers:
   `ge_svg`, `qr_svg`, `qr_figure`
 - re-export of `GenLAProblems`
@@ -132,7 +131,7 @@ Non-preferred but still useful:
 Python/Julia interoperability is part of the product surface, not just an
 implementation detail.
 
-That means API changes should preserve or intentionally migrate:
+Julia wrappers rely on:
 
 - Python module/import paths used from Julia
 - keyword names and defaults used through PythonCall
@@ -145,30 +144,16 @@ For canonical top-level teaching/display capabilities:
 - when the same capability is intentionally offered in both languages, require
   name parity as well
 
-## Legacy Surfaces
+## Compatibility Surfaces
 
-The historical `nM.*` surface does not need to be preserved indefinitely.
+The `nM.*` surface is a compatibility layer. Prefer the canonical top-level
+APIs:
 
-Migration rule:
-
-- preserve capability, not necessarily the old `nM.*` name
-- prefer modern canonical top-level APIs once equivalent functionality exists
-- for the remaining render-oriented `nM` helpers, prefer:
+- preserve capability, not necessarily the `nM.*` name
+- for render-oriented `nM` helpers, prefer:
   - `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
   - `ge_svg`, `qr_svg`, `qr_figure`
   - `load_LAFigureSpecs()`, `load_matrixlayout()`
-- when a legacy `nM` helper used to return only rendered SVG, prefer the
-  direct `*_svg` umbrella helper; use the `*_bundle` variant only when the
+- when an `nM` helper returned only rendered SVG, prefer the direct `*_svg`
+  umbrella helper; use the `*_bundle` variant only when the
   spec payload is also needed
-
-## Migration Direction
-
-The long-term direction is:
-
-- keep `matrixlayout` as the internal rendering engine
-- keep `LAFigureSpecs` as the canonical Python facade
-- keep `GenLAProblems` as the Julia core generation package
-- move umbrella workflow/display/bridge responsibilities into `LATeachingSuite`
-  while preserving user-visible top-level capabilities
-- prefer new Julia wrappers such as `*_bundle` at the umbrella layer rather
-  than re-expanding the `GenLAProblems` core surface
