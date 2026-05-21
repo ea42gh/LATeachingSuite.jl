@@ -68,6 +68,24 @@ end
         GenLAProblems._LAFigureSpecs[] = old_ge_la
     end
 
+    ge_seen = Dict{Symbol,Any}()
+    bg_specs = [[0, 1, [(0, 0), [(0, 0), (1, 0)]], "yellow!40", 1]]
+    la_ge_bg = _py_ns_lat()
+    _py_setattr_lat(la_ge_bg, "ge_svg", (args...; kwargs...) -> begin
+        empty!(ge_seen)
+        merge!(ge_seen, Dict(kwargs))
+        "<svg>ge-bg</svg>"
+    end)
+    try
+        GenLAProblems._LAFigureSpecs[] = la_ge_bg
+        svg = LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; bg_for_entries=bg_specs)
+        @test svg isa LATeachingSuite.SVGOut
+        @test ge_seen[:bg_for_entries] == bg_specs
+        @test get(ge_seen, :decorators, nothing) === nothing
+    finally
+        GenLAProblems._LAFigureSpecs[] = old_ge_la
+    end
+
     la = _py_ns_lat()
     _py_setattr_lat(la, "qr_bundle", (args...; kwargs...) -> begin
         py = GenLAProblems._ensure_pythoncall()
