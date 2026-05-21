@@ -170,6 +170,12 @@ end
 eig_matrices_from_spec(spec; kwargs...) = GenLAProblems.eig_matrices_from_spec(spec; kwargs...)
 svd_matrices_from_spec(spec; kwargs...) = GenLAProblems.svd_matrices_from_spec(spec; kwargs...)
 
+function eig_eigenvalues(spec)
+    lambdas = _spec_list(spec, "lambda")
+    mas = [Int(m) for m in _spec_list(spec, "ma")]
+    return collect(zip(mas, lambdas))
+end
+
 function eig_eigenvectors(spec, λ; orthonormal::Bool=true)
     lambdas = _spec_list(spec, "lambda")
     vec_key = orthonormal ? "qvecs" : "evecs"
@@ -180,6 +186,12 @@ function eig_eigenvectors(spec, λ; orthonormal::Bool=true)
         end
     end
     return nothing
+end
+
+function svd_singular_values(spec)
+    sigmas = _spec_list(spec, "sigma")
+    mas = [Int(m) for m in _spec_list(spec, "ma")]
+    return collect(zip(mas, sigmas))
 end
 
 function svd_rank(spec)
@@ -247,6 +259,7 @@ export ge_svg, qr_svg, eig_svg, svd_svg
 export show_svg, py_show_svg, l_show_svd
 export ge_bundle, qr_bundle, eig_bundle, svd_bundle
 export qr_matrices_from_spec, eig_matrices_from_spec, svd_matrices_from_spec
+export eig_eigenvalues, svd_singular_values
 export svd_rank, eig_eigenvectors, svd_left_vectors, svd_right_vectors
 
 end

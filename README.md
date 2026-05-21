@@ -19,6 +19,7 @@ It provides:
 - canonical matrix extraction helpers for bundle specs:
   `qr_matrices_from_spec`, `eig_matrices_from_spec`, `svd_matrices_from_spec`
 - semantic spec-query helpers:
+  `eig_eigenvalues`, `svd_singular_values`,
   `svd_rank`, `eig_eigenvectors`, `svd_left_vectors`, `svd_right_vectors`
 - canonical modern replacements for `nM` render helpers:
   `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
@@ -48,7 +49,9 @@ helpers and then extract matrices from the returned spec:
 
 Additional semantic queries are available on the same specs:
 
+- `eig_eigenvalues(eig_spec)` returns `(multiplicity, λ)` pairs
 - `eig_eigenvectors(eig_spec, λ)` returns the eigenvector group for eigenvalue `λ`
+- `svd_singular_values(svd_spec)` returns `(multiplicity, σ)` pairs
 - `svd_rank(svd_spec)` returns the rank implied by the nonzero singular values
 - `svd_left_vectors(svd_spec, σ)` returns the left singular vector group for `σ`
 - `svd_right_vectors(svd_spec, σ)` returns the right singular vector group for `σ`
