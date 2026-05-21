@@ -23,7 +23,16 @@ using BlockArrays
 @reexport using GenLAProblems
 
 is_none_val(x) = GenLAProblems.is_none_val(x)
-_ensure_symbolics() = GenLAProblems._ensure_symbolics()
+
+const _symbolics_mod = Ref{Any}(nothing)
+
+function _ensure_symbolics()
+    if _symbolics_mod[] === nothing
+        @eval import Symbolics
+        _symbolics_mod[] = Base.invokelatest(() -> Symbolics)
+    end
+    return _symbolics_mod[]
+end
 
 ensure_pythoncall!() = PythonCall
 _ensure_pythoncall() = PythonCall
