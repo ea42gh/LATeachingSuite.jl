@@ -122,6 +122,8 @@ Preferred bundle-style Julia entry points:
 - `LATeachingSuite.eig_bundle`
 - `LATeachingSuite.svd_bundle`
 - `LATeachingSuite.qr_matrices_from_spec`
+- `LATeachingSuite.q_factor_from_spec`
+- `LATeachingSuite.r_factor_from_spec`
 - `LATeachingSuite.eig_matrices_from_spec`
 - `LATeachingSuite.svd_matrices_from_spec`
 - `LATeachingSuite.eig_svg`
@@ -157,7 +159,8 @@ APIs:
 - preserve capability, not necessarily the `nM.*` name
 - for render-oriented `nM` helpers, prefer:
   - `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
-  - `qr_matrices_from_spec`, `eig_matrices_from_spec`, `svd_matrices_from_spec`
+  - `qr_matrices_from_spec`, `q_factor_from_spec`, `r_factor_from_spec`,
+    `eig_matrices_from_spec`, `svd_matrices_from_spec`
   - `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
   - `load_LAFigureSpecs()`, `load_matrixlayout()`
 - when an `nM` helper returned only rendered SVG, prefer the direct `*_svg`

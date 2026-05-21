@@ -20,6 +20,8 @@ It provides:
   `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
 - canonical matrix extraction helpers for bundle specs:
   `qr_matrices_from_spec`, `eig_matrices_from_spec`, `svd_matrices_from_spec`
+- direct QR factor extractors for bundle specs:
+  `q_factor_from_spec`, `r_factor_from_spec`
 - semantic spec-query helpers:
   `eig_eigenvalues`, `svd_singular_values`,
   `svd_rank`, `eig_eigenvectors`, `svd_left_vectors`, `svd_right_vectors`
@@ -46,6 +48,8 @@ When you want both the rendered figure and the computed matrices, use the bundle
 helpers and then extract matrices from the returned spec:
 
 - `svg, qr_spec = qr_bundle(A)` then `qr_matrices_from_spec(qr_spec)`
+- `svg, qr_spec = qr_bundle(A)` then `q_factor_from_spec(qr_spec)`,
+  `r_factor_from_spec(qr_spec)` if you only need the final QR factors
 - `svg, eig_spec = eig_bundle(A)` then `eig_matrices_from_spec(eig_spec)`
 - `svg, svd_spec = svd_bundle(A)` then `svd_matrices_from_spec(svd_spec)`
 

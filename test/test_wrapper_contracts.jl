@@ -85,10 +85,14 @@ end
         svg_only = LATeachingSuite.qr_svg([1 0; 0 1])
         svg_bundle, spec = LATeachingSuite.qr_bundle([1 0; 0 1])
         qr = LATeachingSuite.qr_matrices_from_spec(spec)
+        Q = LATeachingSuite.q_factor_from_spec(spec)
+        R = LATeachingSuite.r_factor_from_spec(spec)
         @test svg_only isa LATeachingSuite.SVGOut
         @test svg_only.svg == svg_bundle.svg
         @test qr.Q == [1 0; 0 1]
         @test qr.R == [1 0; 0 1]
+        @test Q == [1 0; 0 1]
+        @test R == [1 0; 0 1]
     finally
         GenLAProblems._LAFigureSpecs[] = old_la
     end

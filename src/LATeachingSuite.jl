@@ -169,6 +169,9 @@ function qr_matrices_from_spec(spec)
     return (A=A, W=W, WtA=WtA, WtW=WtW, S=S, Qt=Qt, Q=Q, R=R)
 end
 
+q_factor_from_spec(spec) = qr_matrices_from_spec(spec).Q
+r_factor_from_spec(spec) = qr_matrices_from_spec(spec).R
+
 eig_matrices_from_spec(spec; kwargs...) = GenLAProblems.eig_matrices_from_spec(spec; kwargs...)
 svd_matrices_from_spec(spec; kwargs...) = GenLAProblems.svd_matrices_from_spec(spec; kwargs...)
 
@@ -261,6 +264,7 @@ export ge_svg, qr_svg, eig_svg, svd_svg
 export show_svg, py_show_svg, l_show_svd
 export ge_bundle, qr_bundle, eig_bundle, svd_bundle
 export qr_matrices_from_spec, eig_matrices_from_spec, svd_matrices_from_spec
+export q_factor_from_spec, r_factor_from_spec
 export eig_eigenvalues, svd_singular_values
 export svd_rank, eig_eigenvectors, svd_left_vectors, svd_right_vectors
 
