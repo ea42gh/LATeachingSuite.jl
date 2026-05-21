@@ -25,6 +25,7 @@ linear algebra stack.
 `LATeachingSuite` owns:
 
 - `ShowGE`
+- `lhs_matrix`, `rhs_matrix`, `rhs_column`
 - reduction helpers
 - workflow/display helpers
 - bundle wrappers

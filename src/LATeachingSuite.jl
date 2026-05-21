@@ -70,7 +70,9 @@ using Reexport
     show_forwardsubstitution,
     show_solution,
     solutions,
-    rhs_block,
+    lhs_matrix,
+    rhs_matrix,
+    rhs_column,
     show_ge_final,
     py_show_svg,
     show_svg,
@@ -254,7 +256,7 @@ export normal_eq_reduce_to_ref, reduce_to_ref
 export ref!, show_layout!, show_system, create_cascade!
 export show_backsubstitution!, show_solution!
 export show_backsubstitution, show_forwardsubstitution, show_solution
-export solutions, rhs_block
+export solutions, lhs_matrix, rhs_matrix, rhs_column
 export ge_svg, qr_svg, eig_svg, svd_svg
 export show_svg, py_show_svg, l_show_svd
 export ge_bundle, qr_bundle, eig_bundle, svd_bundle

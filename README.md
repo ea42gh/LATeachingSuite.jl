@@ -12,6 +12,8 @@ It provides:
 - explicit top-level ownership of the canonical Julia GE/workflow surface:
   `ShowGE`, `ref!`, `show_layout!`, `show_system`,
   `show_backsubstitution!`, `show_solution!`
+- matrix accessors for `ShowGE` workflows:
+  `lhs_matrix`, `rhs_matrix`, `rhs_column`
 - a curated `WorkflowDisplay` submodule for notebook/display helpers
 - a curated `PythonBridge` submodule for PythonCall-backed integration helpers
 - canonical umbrella bundle wrappers:
@@ -55,6 +57,20 @@ Additional semantic queries are available on the same specs:
 - `svd_rank(svd_spec)` returns the rank implied by the nonzero singular values
 - `svd_left_vectors(svd_spec, σ)` returns the left singular vector group for `σ`
 - `svd_right_vectors(svd_spec, σ)` returns the right singular vector group for `σ`
+
+For `ShowGE`, RHS data is organized as one or more RHS matrices:
+
+- `ShowGE(A, B)` uses one RHS matrix `B`
+- `ShowGE(A, (B1, B2, ...))` uses multiple RHS matrices
+- `b_mat` selects which RHS matrix
+- `b_col` selects a column within that RHS matrix
+
+Use the accessors to inspect the selected matrices and columns:
+
+- `lhs_matrix(pb; step=:final)`
+- `rhs_matrix(pb, b_mat=1; step=:final)`
+- `rhs_column(pb, b_mat=1, b_col=1; step=:final)`
+- `solutions(pb; b_mat=1, b_col=nothing)`
 
 ## Package Roles
 

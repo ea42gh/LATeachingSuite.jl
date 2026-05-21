@@ -54,7 +54,9 @@ end
     @test hasmethod(LATeachingSuite.show_forwardsubstitution, Tuple{Any,Any})
     @test hasmethod(LATeachingSuite.show_solution, Tuple{Any})
     @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.solutions))
-    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.rhs_block))
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.lhs_matrix))
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.rhs_matrix))
+    @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.rhs_column))
 
     la_ge = _py_ns_lat()
     _py_setattr_lat(la_ge, "ge_svg", (args...; kwargs...) -> "<svg>ge</svg>")

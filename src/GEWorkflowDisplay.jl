@@ -1,13 +1,14 @@
 # --------------------------------------------------------------------------------------------------------------
 """
-    show_system(pb; b_col=1, var_name="x", fig_scale=1)
+    show_system(pb; b_mat=1, b_col=1, var_name="x", fig_scale=1)
 
 Render the linear system associated with a `ShowGE` problem.
 """
-function _system_matrix_rhs(pb::ShowGE{T}; b_col=1) where T <: Number
+function _system_matrix_rhs(pb::ShowGE{T}; b_mat=1, b_col=1) where T <: Number
     A = pb.A
-    if isdefined(pb, :B) && b_col isa Integer && 1 <= b_col <= size(pb.B, 2)
-       b = pb.B[:,b_col]
+    rhs = _rhs_blocks(pb)
+    if !isempty(rhs)
+       b = rhs_column(pb, b_mat, b_col; step=:final)
     else
        b = zeros(eltype(pb.A), size(A,1), 1)
     end
@@ -22,8 +23,8 @@ end
 
 _resolve_output_dir(output_dir, tmp_dir, fallback=nothing) = output_dir !== nothing ? output_dir : (tmp_dir !== nothing ? tmp_dir : fallback)
 
-function show_system(  pb::ShowGE{T}; b_col=1, var_name::String="x", fig_scale=1, output_dir=nothing, tmp_dir=nothing, render_opts=nothing) where T <: Number
-    A, b = _system_matrix_rhs(pb; b_col=b_col)
+function show_system(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, output_dir=nothing, tmp_dir=nothing, render_opts=nothing) where T <: Number
+    A, b = _system_matrix_rhs(pb; b_mat=b_mat, b_col=b_col)
     la = load_LAFigureSpecs()
     linear_system_tex = _pygetattr(la, :linear_system_tex)
     tex = _pycall(linear_system_tex, A, b; var_name=var_name)
@@ -40,11 +41,11 @@ function show_system(  pb::ShowGE{T}; b_col=1, var_name::String="x", fig_scale=1
     return SVGOut(svg_str)
 end
 """
-    create_cascade!(pb::ShowGE; b_col=1, var_name="x")
+    create_cascade!(pb::ShowGE; b_mat=1, b_col=1, var_name="x")
 
 Initialize cascade state for substitution displays.
 """
-function create_cascade!(  pb::ShowGE{T}; b_col=1, var_name::String="x" ) where T <: Number
+function create_cascade!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x" ) where T <: Number
     pb.cascade = nothing
 end
 # --------------------------------------------------------------------------------------------------------------
@@ -104,7 +105,7 @@ function _rhs_vector(b, b_col)
     return b
 end
 
-function _backsub_ref(pb::ShowGE; b_col=1)
+function _backsub_ref(pb::ShowGE; b_mat=1, b_col=1)
     Ab = pb.matrices[end][end]
     if Ab isa AbstractArray{<:AbstractString} || any(x -> x isa AbstractString, Ab)
         gj = false
@@ -116,8 +117,9 @@ function _backsub_ref(pb::ShowGE; b_col=1)
                 end
             end
         end
-        if isdefined(pb, :B)
-            Ab_full = [pb.A pb.B]
+        rhs = _combined_rhs_matrix(pb)
+        if rhs !== nothing
+            Ab_full = [pb.A rhs]
         else
             Ab_full = pb.A
         end
@@ -125,8 +127,9 @@ function _backsub_ref(pb::ShowGE; b_col=1)
         Ab = mats[end][end]
     end
     A = Ab[:, 1:size(pb.A, 2)]
-    if isdefined(pb, :B) && b_col isa Integer && 1 <= b_col <= size(pb.B, 2)
-        b = Ab[:, size(pb.A, 2) + b_col]
+    if _rhs_col_count(pb) > 0
+        global_col = _rhs_global_col_index(pb, Int(b_mat), Int(b_col))
+        b = Ab[:, size(pb.A, 2) + global_col]
     else
         b = zeros(eltype(A), size(A, 1), 1)
     end
@@ -144,10 +147,10 @@ function _backsub_ref(pb::ShowGE; b_col=1)
     return A, b
 end
 
-function _forwardsub_ref(pb::ShowGE; b_col=1)
+function _forwardsub_ref(pb::ShowGE; b_mat=1, b_col=1)
     A = pb.A
-    if isdefined(pb, :B) && b_col isa Integer && 1 <= b_col <= size(pb.B, 2)
-        b = pb.B[:, b_col]
+    if _rhs_col_count(pb) > 0
+        b = rhs_column(pb, Int(b_mat), Int(b_col); step=:final)
     else
         b = zeros(eltype(A), size(A, 1), 1)
     end
@@ -249,24 +252,25 @@ function _display_tex(tex)
     return tex
 end
 """
-    show_backsubstitution!(pb; b_col=1, var_name="x", fig_scale=1)
+    show_backsubstitution!(pb; b_mat=1, b_col=1, var_name="x", fig_scale=1)
 
 Render the back-substitution cascade for a `ShowGE` problem.
 """
-function show_backsubstitution!(  pb::ShowGE{T}; b_col=1, var_name::String="x", fig_scale=1, render_opts=nothing ) where T <: Number
-    if isdefined(pb, :rhs_status) && b_col isa Integer && b_col <= length(pb.rhs_status) && pb.rhs_status[b_col] == :inconsistent
-        val = _inconsistent_rhs_value(pb, b_col)
+function show_backsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, render_opts=nothing ) where T <: Number
+    global_col = _rhs_col_count(pb) > 0 ? _rhs_global_col_index(pb, Int(b_mat), Int(b_col)) : 0
+    if global_col > 0 && isdefined(pb, :rhs_status) && global_col <= length(pb.rhs_status) && pb.rhs_status[global_col] == :inconsistent
+        val = _inconsistent_rhs_value(pb, global_col)
         rhs_txt = val === nothing ? "?" : _rhs_val_to_tex(val)
         lines = [string("0 = ", rhs_txt), "\\text{No Solution}"]
         return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.tmp_dir, render_opts=render_opts)
     end
-    A, b = _backsub_ref(pb; b_col=b_col)
+    A, b = _backsub_ref(pb; b_mat=b_mat, b_col=b_col)
     lines = load_LAFigureSpecs().backsubstitution_tex(A, b, var_name=var_name)
     return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.tmp_dir, render_opts=render_opts)
 end
 # --------------------------------------------------------------------------------------------------------------
-function show_forwardsubstitution!(  pb::ShowGE{T}; b_col=1, var_name::String="x", fig_scale=1, render_svg=true, render_opts=nothing ) where T <: Number
-    A, b = _forwardsub_ref(pb; b_col=b_col)
+function show_forwardsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, render_svg=true, render_opts=nothing ) where T <: Number
+    A, b = _forwardsub_ref(pb; b_mat=b_mat, b_col=b_col)
     lines = load_LAFigureSpecs().backsubstitution_tex(A[end:-1:1, end:-1:1], b[end:-1:1], var_name=var_name)
     lines = _relabel_cascade(lines, size(A, 1); var_name=var_name)
     if render_svg
@@ -276,15 +280,16 @@ function show_forwardsubstitution!(  pb::ShowGE{T}; b_col=1, var_name::String="x
 end
 # --------------------------------------------------------------------------------------------------------------
 """
-    show_solution!(pb; b_col=1, var_name="x", fig_scale=1)
+    show_solution!(pb; b_mat=1, b_col=1, var_name="x", fig_scale=1)
 
 Render the solution vector/form for a `ShowGE` problem.
 """
-function show_solution!(  pb::ShowGE{T}; b_col=1, var_name::String="x", fig_scale=1, render_opts=nothing ) where T <: Number
-    if isdefined(pb, :rhs_status) && b_col isa Integer && b_col <= length(pb.rhs_status) && pb.rhs_status[b_col] == :inconsistent
+function show_solution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, render_opts=nothing ) where T <: Number
+    global_col = _rhs_col_count(pb) > 0 ? _rhs_global_col_index(pb, Int(b_mat), Int(b_col)) : 0
+    if global_col > 0 && isdefined(pb, :rhs_status) && global_col <= length(pb.rhs_status) && pb.rhs_status[global_col] == :inconsistent
         return Vector{T}()
     end
-    A, b = _backsub_ref(pb; b_col=b_col)
+    A, b = _backsub_ref(pb; b_mat=b_mat, b_col=b_col)
     tex = load_LAFigureSpecs().standard_solution_tex(A, b, var_name=var_name)
     return _render_solution_svg(tex; fig_scale=fig_scale, render_opts=render_opts)
 end

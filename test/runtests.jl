@@ -48,7 +48,9 @@ using LinearAlgebra
     @test isdefined(LATeachingSuite, :show_forwardsubstitution)
     @test isdefined(LATeachingSuite, :show_solution)
     @test isdefined(LATeachingSuite, :solutions)
-    @test isdefined(LATeachingSuite, :rhs_block)
+    @test isdefined(LATeachingSuite, :lhs_matrix)
+    @test isdefined(LATeachingSuite, :rhs_matrix)
+    @test isdefined(LATeachingSuite, :rhs_column)
     @test isdefined(LATeachingSuite, :ge_svg)
     @test isdefined(LATeachingSuite, :qr_svg)
     @test isdefined(LATeachingSuite, :eig_svg)
@@ -92,12 +94,22 @@ using LinearAlgebra
     @test hasmethod(LATeachingSuite.show_svg, Tuple{Any})
 
     A = Rational{Int}.([1 2; 3 4])
-    b = Rational{Int}.([5, 6])
-    pb = ShowGE(A, b)
+    B1 = Rational{Int}.([5 7; 6 8])
+    B2 = Rational{Int}.([9; 10])
+    pb = ShowGE(A, (B1, B2))
     ref!(pb; gj=true)
     xp, xh = solutions(pb)
+    xp2, _ = solutions(pb; b_col=2)
+    xp3, _ = solutions(pb; b_mat=2, b_col=1)
+    @test lhs_matrix(pb) == pb.matrices[end][end][:, 1:size(A, 2)]
+    @test rhs_matrix(pb, 1) == pb.matrices[end][end][:, size(A, 2) .+ (1:2)]
+    @test rhs_matrix(pb, 2) == pb.matrices[end][end][:, size(A, 2) .+ (3:3)]
+    @test rhs_column(pb, 1, 2) == rhs_matrix(pb, 1)[:, 2]
+    @test rhs_column(pb, 2, 1) == vec(rhs_matrix(pb, 2))
     @test size(xp, 1) == size(A, 2)
-    @test size(rhs_block(pb), 2) == 1
+    @test size(xp, 2) == 2
+    @test xp2 == xp[:, 2]
+    @test xp3 isa AbstractVector
     @test xh isa AbstractMatrix
 
     mats, pivots, _ = reduce_to_ref(A; gj=true)

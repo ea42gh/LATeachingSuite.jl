@@ -72,6 +72,8 @@ Owns:
 - reduction helpers
 - workflow/display helpers
 - top-level Julia ownership of `ShowGE` and related GE workflow helpers
+- `ShowGE` matrix/column accessors:
+  `lhs_matrix`, `rhs_matrix`, `rhs_column`
 - curated Python bridge access
 - umbrella-level bundle wrappers:
   `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
