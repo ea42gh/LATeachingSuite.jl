@@ -77,7 +77,7 @@ Owns:
   `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
 - canonical modern replacements for the `nM` QR/GE render
   helpers:
-  `ge_svg`, `qr_svg`, `qr_figure`
+  `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
 - re-export of `GenLAProblems`
 
 Role:
@@ -119,6 +119,9 @@ Preferred bundle-style Julia entry points:
 - `LATeachingSuite.qr_bundle`
 - `LATeachingSuite.eig_bundle`
 - `LATeachingSuite.svd_bundle`
+- `LATeachingSuite.qr_matrices_from_spec`
+- `LATeachingSuite.eig_matrices_from_spec`
+- `LATeachingSuite.svd_matrices_from_spec`
 - `LATeachingSuite.eig_svg`
 - `LATeachingSuite.svd_svg`
 
@@ -152,7 +155,8 @@ APIs:
 - preserve capability, not necessarily the `nM.*` name
 - for render-oriented `nM` helpers, prefer:
   - `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
-  - `ge_svg`, `qr_svg`, `qr_figure`
+  - `qr_matrices_from_spec`, `eig_matrices_from_spec`, `svd_matrices_from_spec`
+  - `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
   - `load_LAFigureSpecs()`, `load_matrixlayout()`
 - when an `nM` helper returned only rendered SVG, prefer the direct `*_svg`
   umbrella helper; use the `*_bundle` variant only when the

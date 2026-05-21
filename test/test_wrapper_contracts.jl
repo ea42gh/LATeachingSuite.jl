@@ -67,33 +67,28 @@ end
     end
 
     la = _py_ns_lat()
-    ml = _py_ns_lat()
-    _py_setattr_lat(la, "gram_schmidt_qr_matrices", (A; kwargs...) -> Any[[nothing, nothing], [nothing, nothing]])
-    _py_setattr_lat(la, "qr_tbl_spec_from_matrices", (mats; kwargs...) -> begin
-        py = GenLAProblems._ensure_pythoncall()
-        Base.invokelatest(py.pydict, Dict("kind" => "qr"))
-    end)
     _py_setattr_lat(la, "qr_bundle", (args...; kwargs...) -> begin
         py = GenLAProblems._ensure_pythoncall()
-        spec = Base.invokelatest(py.pydict, Dict("kind" => "qr"))
+        matrices = Any[
+            Any[nothing, nothing, [1 0; 0 1], [1 0; 0 1]],
+            Any[nothing, [1 0; 0 1], [1 0; 0 1], [1 0; 0 1]],
+            Any[[1 0; 0 1], [1 0; 0 1], [1 0; 0 1], nothing],
+        ]
+        spec = Base.invokelatest(py.pydict, Dict("kind" => "qr", "matrices" => matrices))
         Base.invokelatest(py.pydict, Dict("spec" => spec, "svg" => "<svg>qr-bundle</svg>"))
     end)
-    _py_setattr_lat(ml, "render_qr_svg", (; kwargs...) -> "<svg>qr</svg>")
     old_la = GenLAProblems._LAFigureSpecs[]
-    old_ml = GenLAProblems._matrixlayout[]
     try
         GenLAProblems._LAFigureSpecs[] = la
-        GenLAProblems._matrixlayout[] = ml
-        svg, mats = LATeachingSuite.qr_figure([1 0; 0 1])
-        @test svg isa GenLAProblems.SVGOut
-        @test mats !== nothing
         svg_only = LATeachingSuite.qr_svg([1 0; 0 1])
-        svg_bundle, _ = LATeachingSuite.qr_bundle([1 0; 0 1])
+        svg_bundle, spec = LATeachingSuite.qr_bundle([1 0; 0 1])
+        qr = LATeachingSuite.qr_matrices_from_spec(spec)
         @test svg_only isa LATeachingSuite.SVGOut
         @test svg_only.svg == svg_bundle.svg
+        @test qr.Q == [1 0; 0 1]
+        @test qr.R == [1 0; 0 1]
     finally
         GenLAProblems._LAFigureSpecs[] = old_la
-        GenLAProblems._matrixlayout[] = old_ml
     end
 end
 

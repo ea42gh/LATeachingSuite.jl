@@ -29,7 +29,9 @@ linear algebra stack.
 - workflow/display helpers
 - bundle wrappers
 - `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
-- `qr_figure`
+- `qr_matrices_from_spec`
+- `eig_matrices_from_spec`
+- `svd_matrices_from_spec`
 - curated Python bridge helpers
 
 `GenLAProblems` owns:
@@ -42,6 +44,7 @@ linear algebra stack.
 
 - `nM.*` remains a compatibility surface.
 - Prefer `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`,
-  `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`, and `qr_figure` for new Julia code.
+  `qr_matrices_from_spec`, `eig_matrices_from_spec`, `svd_matrices_from_spec`,
+  `ge_svg`, `qr_svg`, `eig_svg`, and `svd_svg` for new Julia code.
 - Prefer `load_LAFigureSpecs()` and `load_matrixlayout()` over direct access to
   compatibility proxy objects.

@@ -135,7 +135,24 @@ const _svd_bundle = _bundle_wrapper(:svd_bundle)
 
 ge_svg(args...; kwargs...) = matrixlayout_ge(args...; kwargs...)
 qr_svg(args...; kwargs...) = first(qr_bundle(args...; kwargs...))
-qr_figure(args...; kwargs...) = GenLAProblems._nm_gram_schmidt_qr(args...; kwargs...)
+
+function qr_matrices_from_spec(spec)
+    matrices = spec isa AbstractDict ? spec["matrices"] : spec["matrices"]
+    mats = materialize_python_value(matrices)
+    row1, row2, row3 = (collect(r) for r in mats)
+    A = row1[3]
+    W = row1[4]
+    WtA = row2[3]
+    WtW = row2[4]
+    S = row3[1]
+    Qt = row3[2]
+    R = row3[3]
+    Q = Qt === nothing ? nothing : transpose(Qt)
+    return (A=A, W=W, WtA=WtA, WtW=WtW, S=S, Qt=Qt, Q=Q, R=R)
+end
+
+eig_matrices_from_spec(spec; kwargs...) = GenLAProblems.eig_matrices_from_spec(spec; kwargs...)
+svd_matrices_from_spec(spec; kwargs...) = GenLAProblems.svd_matrices_from_spec(spec; kwargs...)
 
 function eig_svg(args...; kwargs...)
     la = load_LAFigureSpecs()
@@ -163,8 +180,9 @@ export ref!, show_layout!, show_system, create_cascade!
 export show_backsubstitution!, show_solution!
 export show_backsubstitution, show_forwardsubstitution, show_solution
 export solutions, rhs_block
-export ge_svg, qr_svg, eig_svg, svd_svg, qr_figure
+export ge_svg, qr_svg, eig_svg, svd_svg
 export show_svg, py_show_svg, l_show_svd
 export ge_bundle, qr_bundle, eig_bundle, svd_bundle
+export qr_matrices_from_spec, eig_matrices_from_spec, svd_matrices_from_spec
 
 end

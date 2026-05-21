@@ -17,7 +17,7 @@ It should provide:
   `ShowGE`, `ref!`, `show_layout!`, `show_system`, and the backsub/solution
   helpers, even if they delegate internally to `GenLAProblems`
 - canonical modern replacements for legacy `nM` render helpers such as
-  `ge_svg`, `qr_svg`, and `qr_figure`
+  `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
 
 ## Package Relationships
 
