@@ -25,29 +25,18 @@ It provides:
 - semantic spec-query helpers:
   `eig_eigenvalues`, `svd_singular_values`,
   `svd_rank`, `eig_eigenvectors`, `svd_left_vectors`, `svd_right_vectors`
-- canonical modern replacements for `nM` render helpers:
+- canonical Julia render helpers:
   `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
+- canonical compute+render QR helper:
+  `qr_figure`
 - top-level umbrella bridge/display wrappers such as:
   `load_LAFigureSpecs`, `load_matrixlayout`, `show_svg`, `py_show_svg`
-
-The `nM.*` surface is a compatibility layer. Prefer the umbrella names instead:
-
-- `nM.show_ge_tbl` -> `ge_svg` or `ge_bundle` if you also need the spec
-- `nM.show_qr_tbl` -> `qr_bundle`
-- `nM.show_eig_tbl` -> `eig_bundle`
-- `nM.show_svd_tbl` -> `svd_bundle`
-- `nM.show_ge` / `nM.ge` -> `ge_svg`
-- `nM.show_qr` -> `qr_svg`
-- `nM.qr_svg` / `nM.qr_tbl_svg` -> `qr_svg`
-- `nM.eig_tbl_svg` -> `eig_svg`
-- `nM.svd_tbl_svg` -> `svd_svg`
-- `nM.la` -> `load_LAFigureSpecs()`
-- `nM.ml` -> `load_matrixlayout()`
 
 When you want both the rendered figure and the computed matrices, use the bundle
 helpers and then extract matrices from the returned spec:
 
 - `svg, qr_spec = qr_bundle(A)` then `qr_matrices_from_spec(qr_spec)`
+- `svg, qr_mats = qr_figure(A)` then `qr_matrices_from_grid(qr_mats)`
 - `svg, qr_spec = qr_bundle(A)` then `q_factor_from_spec(qr_spec)`,
   `r_factor_from_spec(qr_spec)` if you only need the final QR factors
 - `svg, eig_spec = eig_bundle(A)` then `eig_matrices_from_spec(eig_spec)`

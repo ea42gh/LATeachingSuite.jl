@@ -45,10 +45,11 @@ linear algebra stack.
 
 ## Compatibility notes
 
-- `nM.*` remains a compatibility surface.
+- The legacy `nM.*` compatibility surface has been removed.
 - Prefer `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`,
-  `qr_matrices_from_spec`, `q_factor_from_spec`, `r_factor_from_spec`,
+  `qr_matrices_from_spec`, `qr_matrices_from_grid`,
+  `q_factor_from_spec`, `r_factor_from_spec`,
   `eig_matrices_from_spec`, `svd_matrices_from_spec`,
-  `ge_svg`, `qr_svg`, `eig_svg`, and `svd_svg` for new Julia code.
+  `ge_svg`, `qr_svg`, `eig_svg`, and `svd_svg` for Julia teaching code.
 - Prefer `load_LAFigureSpecs()` and `load_matrixlayout()` over direct access to
-  compatibility proxy objects.
+  Python implementation modules.

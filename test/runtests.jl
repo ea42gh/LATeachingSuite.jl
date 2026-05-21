@@ -33,6 +33,7 @@ using GenLAProblems
 using LinearAlgebra
 
 @testset "LATeachingSuite" begin
+    @test !isdefined(LATeachingSuite, :nM)
     @test isdefined(LATeachingSuite, :ShowGE)
     @test isdefined(LATeachingSuite, :WorkflowDisplay)
     @test isdefined(LATeachingSuite, :PythonBridge)
@@ -53,9 +54,11 @@ using LinearAlgebra
     @test isdefined(LATeachingSuite, :rhs_column)
     @test isdefined(LATeachingSuite, :ge_svg)
     @test isdefined(LATeachingSuite, :qr_svg)
+    @test isdefined(LATeachingSuite, :qr_figure)
     @test isdefined(LATeachingSuite, :eig_svg)
     @test isdefined(LATeachingSuite, :svd_svg)
     @test isdefined(LATeachingSuite, :qr_matrices_from_spec)
+    @test isdefined(LATeachingSuite, :qr_matrices_from_grid)
     @test isdefined(LATeachingSuite, :q_factor_from_spec)
     @test isdefined(LATeachingSuite, :r_factor_from_spec)
     @test isdefined(LATeachingSuite, :eig_matrices_from_spec)
@@ -82,9 +85,11 @@ using LinearAlgebra
     @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.ref!))
     @test hasmethod(LATeachingSuite.show_backsubstitution, Tuple{Any,Any})
     @test hasmethod(LATeachingSuite.ge_svg, Tuple{Any})
+    @test hasmethod(LATeachingSuite.qr_figure, Tuple{Any})
     @test hasmethod(LATeachingSuite.eig_svg, Tuple{Any})
     @test hasmethod(LATeachingSuite.svd_svg, Tuple{Any})
     @test hasmethod(LATeachingSuite.qr_matrices_from_spec, Tuple{Any})
+    @test hasmethod(LATeachingSuite.qr_matrices_from_grid, Tuple{Any})
     @test hasmethod(LATeachingSuite.q_factor_from_spec, Tuple{Any})
     @test hasmethod(LATeachingSuite.r_factor_from_spec, Tuple{Any})
     @test hasmethod(LATeachingSuite.eig_matrices_from_spec, Tuple{Any})

@@ -41,14 +41,12 @@ _py_is_none(x) = GenLAProblems._py_is_none(x)
 _py_is_py(x) = GenLAProblems._py_is_py(x)
 _ensure_blockarrays() = GenLAProblems._ensure_blockarrays()
 _ensure_symbolics() = GenLAProblems._ensure_symbolics()
-_normalize_render_opts(args...; kwargs...) = GenLAProblems._normalize_render_opts(args...; kwargs...)
 
 const _LAFigureSpecs = GenLAProblems._LAFigureSpecs
 const _matrixlayout = GenLAProblems._matrixlayout
 const _sympy = GenLAProblems._sympy
 
 const sympy = GenLAProblems.sympy
-const nM = GenLAProblems.nM
 
 include("DisplayInterop.jl")
 include("SolveProblems.jl")
@@ -77,7 +75,6 @@ using Reexport
     py_show_svg,
     show_svg,
     l_show_svd,
-    nM,
     mm_to_px,
     px_to_mm
 
@@ -130,6 +127,63 @@ function _bundle_wrapper(bundle_sym::Symbol)
     end
 end
 
+function _split_qr_figure_kwargs(kwargs)
+    matrices_keys = Set([:allow_rank_deficient, :rank_deficient])
+    spec_keys = Set([
+        :array_names,
+        :fig_scale,
+        :preamble,
+        :extension,
+        :nice_options,
+        :label_color,
+        :label_text_color,
+        :known_zero_color,
+        :decorators,
+        :strict,
+    ])
+    render_keys = Set([
+        :formatter,
+        :toolchain_name,
+        :crop,
+        :padding,
+        :frame,
+        :exact_bbox,
+        :output_dir,
+        :output_stem,
+        :tmp_dir,
+        :render_opts,
+        :strict,
+    ])
+    matrices_kw = Dict{Symbol,Any}()
+    spec_kw = Dict{Symbol,Any}()
+    render_kw = Dict{Symbol,Any}()
+    for (k, v) in kwargs
+        if k === :strict
+            spec_kw[k] = v
+            render_kw[k] = v
+        elseif k in render_keys
+            render_kw[k] = v
+        elseif k in spec_keys
+            spec_kw[k] = v
+        elseif k in matrices_keys
+            matrices_kw[k] = v
+        else
+            spec_kw[k] = v
+        end
+    end
+    if haskey(render_kw, :tmp_dir) && !haskey(render_kw, :output_dir)
+        render_kw[:output_dir] = render_kw[:tmp_dir]
+    end
+    pop!(render_kw, :tmp_dir, nothing)
+    pop!(render_kw, :keep_file, nothing)
+    return matrices_kw, spec_kw, render_kw
+end
+
+function _render_qr_from_spec(spec; render_kw...)
+    render_qr_svg = _pygetattr(load_matrixlayout(), :render_qr_svg)
+    return _pycall(render_qr_svg; spec=spec, render_kw...)
+end
+
 const _ge_bundle = _bundle_wrapper(:ge_bundle)
 const _qr_bundle = _bundle_wrapper(:qr_bundle)
 const _eig_bundle = _bundle_wrapper(:eig_bundle)
@@ -137,6 +191,18 @@ const _svd_bundle = _bundle_wrapper(:svd_bundle)
 
 ge_svg(args...; kwargs...) = matrixlayout_ge(args...; kwargs...)
 qr_svg(args...; kwargs...) = first(qr_bundle(args...; kwargs...))
+
+function qr_figure(args...; kwargs...)
+    length(args) == 1 || throw(ArgumentError("qr_figure expects a single matrix A"))
+    matrices_kw, spec_kw, render_kw = _split_qr_figure_kwargs(kwargs)
+    la = load_LAFigureSpecs()
+    gram_schmidt_qr_matrices = _pygetattr(la, :gram_schmidt_qr_matrices)
+    qr_tbl_spec_from_matrices = _pygetattr(la, :qr_tbl_spec_from_matrices)
+    matrices = _pycall(gram_schmidt_qr_matrices, args...; matrices_kw...)
+    spec = _pycall(qr_tbl_spec_from_matrices, matrices; spec_kw...)
+    svg = _render_qr_from_spec(spec; render_kw...)
+    return _show_svg(svg), materialize_python_value(matrices)
+end
 
 _spec_get(spec, key::AbstractString) = spec isa AbstractDict ? spec[key] : spec[key]
 _spec_list(spec, key::AbstractString) = collect(materialize_python_value(_spec_get(spec, key)))
@@ -172,8 +238,46 @@ end
 q_factor_from_spec(spec) = qr_matrices_from_spec(spec).Q
 r_factor_from_spec(spec) = qr_matrices_from_spec(spec).R
 
-eig_matrices_from_spec(spec; kwargs...) = GenLAProblems.eig_matrices_from_spec(spec; kwargs...)
-svd_matrices_from_spec(spec; kwargs...) = GenLAProblems.svd_matrices_from_spec(spec; kwargs...)
+function eig_matrices_from_spec(spec; orthonormal::Bool=true)
+    la = load_LAFigureSpecs()
+    eig_from_spec = _pygetattr(la, :eig_matrices_from_spec)
+    return materialize_python_value(_pycall(eig_from_spec, spec; orthonormal=orthonormal))
+end
+
+function svd_matrices_from_spec(spec; reduced::Bool=true)
+    la = load_LAFigureSpecs()
+    svd_from_spec = _pygetattr(la, :svd_matrices_from_spec)
+    return materialize_python_value(_pycall(svd_from_spec, spec; reduced=reduced))
+end
+
+function qr_matrices_from_grid(mats)
+    la = load_LAFigureSpecs()
+    qr_from_grid = _pygetattr(la, :qr_matrices_from_grid)
+    qr = _pycall(qr_from_grid, mats)
+    getmat(name::String) = begin
+        try
+            materialize_python_value(qr[name])
+        catch
+            nothing
+        end
+    end
+    return (
+        A = getmat("A"),
+        W = getmat("W"),
+        WtA = getmat("WtA"),
+        WtW = getmat("WtW"),
+        S = getmat("S"),
+        Qt = getmat("Qt"),
+        Q = getmat("Q"),
+        R = getmat("R"),
+    )
+end
+
+function qr_matrices_dict_from_grid(mats)
+    la = load_LAFigureSpecs()
+    qr_from_grid = _pygetattr(la, :qr_matrices_dict_from_grid)
+    return _pycall(qr_from_grid, mats)
+end
 
 function eig_eigenvalues(spec)
     lambdas = _spec_list(spec, "lambda")
@@ -261,9 +365,11 @@ export show_backsubstitution!, show_solution!
 export show_backsubstitution, show_forwardsubstitution, show_solution
 export solutions, lhs_matrix, rhs_matrix, rhs_column
 export ge_svg, qr_svg, eig_svg, svd_svg
+export qr_figure
 export show_svg, py_show_svg, l_show_svd
 export ge_bundle, qr_bundle, eig_bundle, svd_bundle
 export qr_matrices_from_spec, eig_matrices_from_spec, svd_matrices_from_spec
+export qr_matrices_from_grid, qr_matrices_dict_from_grid
 export q_factor_from_spec, r_factor_from_spec
 export eig_eigenvalues, svd_singular_values
 export svd_rank, eig_eigenvectors, svd_left_vectors, svd_right_vectors

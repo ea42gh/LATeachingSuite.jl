@@ -77,9 +77,10 @@ Owns:
 - curated Python bridge access
 - umbrella-level bundle wrappers:
   `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
-- canonical modern replacements for the `nM` QR/GE render
-  helpers:
+- canonical Julia render helpers:
   `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
+- canonical compute+render QR helper:
+  `qr_figure`
 - re-export of `GenLAProblems`
 
 Role:
@@ -153,16 +154,12 @@ For canonical top-level teaching/display capabilities:
 
 ## Compatibility Surfaces
 
-The `nM.*` surface is a compatibility layer. Prefer the canonical top-level
-APIs:
+The legacy `nM.*` compatibility layer has been removed. Prefer the canonical
+top-level APIs:
 
-- preserve capability, not necessarily the `nM.*` name
-- for render-oriented `nM` helpers, prefer:
-  - `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
-  - `qr_matrices_from_spec`, `q_factor_from_spec`, `r_factor_from_spec`,
-    `eig_matrices_from_spec`, `svd_matrices_from_spec`
-  - `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
-  - `load_LAFigureSpecs()`, `load_matrixlayout()`
-- when an `nM` helper returned only rendered SVG, prefer the direct `*_svg`
-  umbrella helper; use the `*_bundle` variant only when the
-  spec payload is also needed
+- `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
+- `qr_matrices_from_spec`, `qr_matrices_from_grid`,
+  `q_factor_from_spec`, `r_factor_from_spec`,
+  `eig_matrices_from_spec`, `svd_matrices_from_spec`
+- `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
+- `load_LAFigureSpecs()`, `load_matrixlayout()`
