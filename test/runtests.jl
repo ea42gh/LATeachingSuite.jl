@@ -39,6 +39,7 @@ using LinearAlgebra
     @test isdefined(LATeachingSuite, :PythonBridge)
     @test isdefined(LATeachingSuite, :load_LAFigureSpecs)
     @test isdefined(LATeachingSuite, :load_matrixlayout)
+    @test isdefined(LATeachingSuite, :charpoly)
     @test isdefined(LATeachingSuite, :ref!)
     @test isdefined(LATeachingSuite, :show_layout!)
     @test isdefined(LATeachingSuite, :show_system)
@@ -124,6 +125,12 @@ using LinearAlgebra
     mats, pivots, _ = reduce_to_ref(A; gj=true)
     @test size(mats[end][end]) == size(A)
     @test pivots == [1, 2]
+
+    Adef = Rational.(GenLAProblems.gen_non_diagonalizable_eigenproblem(2, 0; maxint=2))
+    @test LATeachingSuite.charpoly(Adef) == LATeachingSuite.charpoly([2 1 0; 0 2 0; 0 0 0])
+
+    Afrom = GenLAProblems.gen_from_jordan_form([GenLAProblems.jordan_block(2, 2), GenLAProblems.jordan_block(0, 1)]; maxint=2)
+    @test LATeachingSuite.charpoly(Afrom) == LATeachingSuite.charpoly([2 1 0; 0 2 0; 0 0 0])
 end
 
 include("test_wrapper_contracts.jl")

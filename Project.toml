@@ -4,6 +4,7 @@ version = "0.1.0-DEV"
 authors = ["ea42_github@mail.com"]
 
 [deps]
+AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
 GenLAProblems = "f8228cda-011f-463c-ac28-4f36d81e7604"
 LAlatex = "2feda2f4-7604-459e-bd73-51e960cd9dcb"

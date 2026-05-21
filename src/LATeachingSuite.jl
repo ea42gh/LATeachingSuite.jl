@@ -2,6 +2,7 @@ module LATeachingSuite
 
 using Reexport
 using LinearAlgebra
+using AbstractAlgebra
 using LAlatex
 using LaTeXStrings: LaTeXString
 
@@ -506,6 +507,7 @@ svd_bundle(args...; kwargs...) = _svd_bundle(args...; kwargs...)
 export WorkflowDisplay, PythonBridge, ShowGE
 export load_LAFigureSpecs, load_matrixlayout
 export la_version, la_build, ml_version, ml_build
+export charpoly
 export split_R_RHS, particular_solution, homogeneous_solutions
 export normal_eq_reduce_to_ref, reduce_to_ref
 export ref!, show_layout!, show_system, create_cascade!
