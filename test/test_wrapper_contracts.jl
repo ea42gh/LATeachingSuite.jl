@@ -3,14 +3,14 @@ using LATeachingSuite
 using GenLAProblems
 
 function _py_ns_lat()
-    py = GenLAProblems._ensure_pythoncall()
+    py = LATeachingSuite.ensure_pythoncall!()
     types = Base.invokelatest(py.pyimport, "types")
     simple_namespace = Base.invokelatest(py.pygetattr, types, "SimpleNamespace")
     return Base.invokelatest(py.pycall, simple_namespace)
 end
 
 function _py_setattr_lat(obj, name::AbstractString, value)
-    py = GenLAProblems._ensure_pythoncall()
+    py = LATeachingSuite.ensure_pythoncall!()
     Base.invokelatest(py.pycall, py.pybuiltins.setattr, obj, name, value)
 end
 
@@ -88,7 +88,7 @@ end
 
     la = _py_ns_lat()
     ml = _py_ns_lat()
-    py = GenLAProblems._ensure_pythoncall()
+    py = LATeachingSuite.ensure_pythoncall!()
     _py_setattr_lat(la, "qr_bundle", (args...; kwargs...) -> begin
         matrices = Any[
             Any[nothing, nothing, [1 0; 0 1], [1 0; 0 1]],
@@ -187,7 +187,7 @@ end
     function fake_bundle(kind::Symbol)
         return function(args...; kwargs...)
             seen[kind] = Dict(kwargs)
-            py = GenLAProblems._ensure_pythoncall()
+            py = LATeachingSuite.ensure_pythoncall!()
             return Base.invokelatest(py.pydict, Dict(
                 "spec" => Base.invokelatest(py.pydict, Dict("kind" => String(kind), "argc" => length(args))),
                 "svg" => "<svg>$(kind)</svg>",
@@ -215,7 +215,7 @@ end
             @test occursin(string(kind), svg.svg)
             @test seen[kind][:output_dir] == "/tmp/lat"
             @test haskey(seen[kind], :render_opts)
-            py = GenLAProblems._ensure_pythoncall()
+            py = LATeachingSuite.ensure_pythoncall!()
             @test Base.invokelatest(py.pyconvert, String, spec["kind"]) == String(kind)
             @test Base.invokelatest(py.pyconvert, Int, spec["argc"]) == 1
         end
@@ -226,7 +226,7 @@ end
 
 @testset "Bundle wrapper render-error contract" begin
     la = _py_ns_lat()
-    py = GenLAProblems._ensure_pythoncall()
+    py = LATeachingSuite.ensure_pythoncall!()
     _py_setattr_lat(la, "ge_bundle", (args...; kwargs...) ->
         Base.invokelatest(py.pydict, Dict(
             "spec" => Base.invokelatest(py.pydict, Dict("kind" => "ge")),

@@ -22,19 +22,43 @@ using BlockArrays
 @reexport using LAlatex
 @reexport using GenLAProblems
 
-ensure_pythoncall!() = GenLAProblems.ensure_pythoncall!()
 is_none_val(x) = GenLAProblems.is_none_val(x)
-_ensure_pythoncall() = GenLAProblems._ensure_pythoncall()
-_pyimport(name::String) = GenLAProblems._pyimport(name)
-_pycall(f, args...; kwargs...) = GenLAProblems._pycall(f, args...; kwargs...)
-_pygetattr(obj, name::Symbol) = GenLAProblems._pygetattr(obj, name)
-_pygetattr_fallback(obj, name::Symbol, mod::String) = GenLAProblems._pygetattr_fallback(obj, name, mod)
 _ensure_symbolics() = GenLAProblems._ensure_symbolics()
+
+ensure_pythoncall!() = PythonCall
+_ensure_pythoncall() = PythonCall
+_pyimport(name::String) = Base.invokelatest(PythonCall.pyimport, name)
+_pycall(f, args...; kwargs...) = Base.invokelatest(PythonCall.pycall, f, args...; kwargs...)
+_pygetattr(obj, name::Symbol) = Base.invokelatest(PythonCall.pygetattr, obj, String(name))
+function _pygetattr_fallback(obj, name::Symbol, mod::String)
+    builtins = _pyimport("builtins")
+    has = Base.invokelatest(PythonCall.pycall, _pygetattr(builtins, :hasattr), obj, String(name))
+    if Base.invokelatest(PythonCall.pyconvert, Bool, has)
+        return _pygetattr(obj, name)
+    end
+    sub = _pyimport(mod)
+    return _pygetattr(sub, name)
+end
 
 const _LAFigureSpecs = Ref{Any}(nothing)
 const _matrixlayout = Ref{Any}(nothing)
+const _sympy = Ref{Any}(nothing)
 
-const sympy = GenLAProblems.sympy
+include("PythonBridgeUtils.jl")
+include("SymPyHelpers.jl")
+using .SymPyHelpers: sym_to_julia_vec, sym_to_julia_mat
+
+function Base.getproperty(::SympyProxy, name::Symbol)
+    if _sympy[] === nothing
+        _sympy[] = _pyimport("sympy")
+    end
+    attr = _pygetattr(_sympy[], name)
+    builtins = _pyimport("builtins")
+    if Base.invokelatest(PythonCall.pyconvert, Bool, _pycall(builtins.callable, attr))
+        return (args...; kwargs...) -> _pycall(attr, args...; kwargs...)
+    end
+    return attr
+end
 
 mm_to_px(mm::Real) = float(mm) * 96.0 / 25.4
 px_to_mm(px::Real) = float(px) * 25.4 / 96.0
@@ -162,9 +186,9 @@ function materialize_python_value(x)
         shape = Base.invokelatest(PythonCall.pygetattr, x, "shape")
         shp = Base.invokelatest(PythonCall.pyconvert, Tuple, shape)
         if length(shp) == 2
-            return map(materialize_python_value, GenLAProblems.sym_to_julia_mat(x))
+            return map(materialize_python_value, sym_to_julia_mat(x))
         elseif length(shp) == 1
-            return map(materialize_python_value, GenLAProblems.sym_to_julia_vec(x))
+            return map(materialize_python_value, sym_to_julia_vec(x))
         end
     catch
     end
