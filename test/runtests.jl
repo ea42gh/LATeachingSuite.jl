@@ -40,6 +40,10 @@ using LinearAlgebra
     @test isdefined(LATeachingSuite, :load_LAFigureSpecs)
     @test isdefined(LATeachingSuite, :load_matrixlayout)
     @test isdefined(LATeachingSuite, :charpoly)
+    @test isdefined(LATeachingSuite, :gram_schmidt_w)
+    @test isdefined(LATeachingSuite, :normalize_columns)
+    @test isdefined(LATeachingSuite, :qr_layout)
+    @test isdefined(LATeachingSuite, :gram_schmidt_stable)
     @test isdefined(LATeachingSuite, :ref!)
     @test isdefined(LATeachingSuite, :show_layout!)
     @test isdefined(LATeachingSuite, :show_system)
@@ -83,6 +87,9 @@ using LinearAlgebra
     @test isdefined(LATeachingSuite.PythonBridge, :load_LAFigureSpecs)
     @test hasmethod(LATeachingSuite.load_LAFigureSpecs, Tuple{})
     @test hasmethod(LATeachingSuite.load_matrixlayout, Tuple{})
+    @test hasmethod(LATeachingSuite.gram_schmidt_w, Tuple{Any})
+    @test hasmethod(LATeachingSuite.normalize_columns, Tuple{Any})
+    @test hasmethod(LATeachingSuite.qr_layout, Tuple{Any})
     @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.ref!))
     @test hasmethod(LATeachingSuite.show_backsubstitution, Tuple{Any,Any})
     @test hasmethod(LATeachingSuite.ge_svg, Tuple{Any})
@@ -131,6 +138,19 @@ using LinearAlgebra
 
     Afrom = GenLAProblems.gen_from_jordan_form([GenLAProblems.jordan_block(2, 2), GenLAProblems.jordan_block(0, 1)]; maxint=2)
     @test LATeachingSuite.charpoly(Afrom) == LATeachingSuite.charpoly([2 1 0; 0 2 0; 0 0 0])
+
+    Aqr = Rational{Int}.([1 1; 0 1])
+    Wqr = LATeachingSuite.gram_schmidt_w(Aqr)
+    Qqr = LATeachingSuite.normalize_columns(Wqr)
+    Qs, Rs = LATeachingSuite.gram_schmidt_stable(Aqr)
+    Qf, Rf = LATeachingSuite.gram_schmidt_stable(Float64.(Aqr))
+    @test size(Wqr) == size(Aqr)
+    @test size(Qqr) == size(Aqr)
+    @test size(Qs) == size(Aqr)
+    @test size(Rs) == size(Aqr)
+    @test Qs * Rs == Aqr
+    @test Qf * Rf ≈ Float64.(Aqr)
+    @test LATeachingSuite.qr_layout(Aqr) !== nothing
 end
 
 include("test_wrapper_contracts.jl")
