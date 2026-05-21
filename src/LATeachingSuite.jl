@@ -136,8 +136,24 @@ const _svd_bundle = _bundle_wrapper(:svd_bundle)
 ge_svg(args...; kwargs...) = matrixlayout_ge(args...; kwargs...)
 qr_svg(args...; kwargs...) = first(qr_bundle(args...; kwargs...))
 
+_spec_get(spec, key::AbstractString) = spec isa AbstractDict ? spec[key] : spec[key]
+_spec_list(spec, key::AbstractString) = collect(materialize_python_value(_spec_get(spec, key)))
+
+function _spec_values_equal(a, b)
+    a2 = materialize_python_value(a)
+    b2 = materialize_python_value(b)
+    if a2 == b2
+        return true
+    end
+    try
+        return materialize_python_value(sympy.simplify(a2 - b2)) == 0
+    catch
+        return string(a2) == string(b2)
+    end
+end
+
 function qr_matrices_from_spec(spec)
-    matrices = spec isa AbstractDict ? spec["matrices"] : spec["matrices"]
+    matrices = _spec_get(spec, "matrices")
     mats = materialize_python_value(matrices)
     row1, row2, row3 = (collect(r) for r in mats)
     A = row1[3]
@@ -153,6 +169,53 @@ end
 
 eig_matrices_from_spec(spec; kwargs...) = GenLAProblems.eig_matrices_from_spec(spec; kwargs...)
 svd_matrices_from_spec(spec; kwargs...) = GenLAProblems.svd_matrices_from_spec(spec; kwargs...)
+
+function eig_eigenvectors(spec, λ; orthonormal::Bool=true)
+    lambdas = _spec_list(spec, "lambda")
+    vec_key = orthonormal ? "qvecs" : "evecs"
+    groups = haskey(materialize_python_value(spec), vec_key) ? _spec_list(spec, vec_key) : _spec_list(spec, "evecs")
+    for (lam, grp) in zip(lambdas, groups)
+        if _spec_values_equal(lam, λ)
+            return grp
+        end
+    end
+    return nothing
+end
+
+function svd_rank(spec)
+    sigmas = _spec_list(spec, "sigma")
+    mas = [Int(m) for m in _spec_list(spec, "ma")]
+    rank = 0
+    for (σ, m) in zip(sigmas, mas)
+        if !_spec_values_equal(σ, 0)
+            rank += m
+        end
+    end
+    return rank
+end
+
+function svd_left_vectors(spec, σ)
+    sigmas = _spec_list(spec, "sigma")
+    groups = _spec_list(spec, "uvecs")
+    for (sigma, grp) in zip(sigmas, groups)
+        if _spec_values_equal(sigma, σ)
+            return grp
+        end
+    end
+    return nothing
+end
+
+function svd_right_vectors(spec, σ; orthonormal::Bool=true)
+    sigmas = _spec_list(spec, "sigma")
+    vec_key = orthonormal ? "qvecs" : "evecs"
+    groups = _spec_list(spec, vec_key)
+    for (sigma, grp) in zip(sigmas, groups)
+        if _spec_values_equal(sigma, σ)
+            return grp
+        end
+    end
+    return nothing
+end
 
 function eig_svg(args...; kwargs...)
     la = load_LAFigureSpecs()
@@ -184,5 +247,6 @@ export ge_svg, qr_svg, eig_svg, svd_svg
 export show_svg, py_show_svg, l_show_svd
 export ge_bundle, qr_bundle, eig_bundle, svd_bundle
 export qr_matrices_from_spec, eig_matrices_from_spec, svd_matrices_from_spec
+export svd_rank, eig_eigenvectors, svd_left_vectors, svd_right_vectors
 
 end

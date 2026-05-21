@@ -99,6 +99,29 @@ end
     @test LATeachingSuite.l_show_svd(I2, I2, I2, I2, 1) === nothing
 end
 
+@testset "Spec query helpers" begin
+    eig_spec = Dict(
+        "lambda" => Any[2, 1],
+        "ma" => Any[1, 1],
+        "evecs" => Any[Any[[1, 0]], Any[[0, 1]]],
+        "qvecs" => Any[Any[[1, 0]], Any[[0, 1]]],
+    )
+    @test LATeachingSuite.eig_eigenvectors(eig_spec, 2) == Any[[1, 0]]
+    @test LATeachingSuite.eig_eigenvectors(eig_spec, 3) === nothing
+
+    svd_spec = Dict(
+        "sigma" => Any[3, 1, 0],
+        "ma" => Any[1, 1, 1],
+        "evecs" => Any[Any[[1, 0, 0]], Any[[0, 1, 0]], Any[[0, 0, 1]]],
+        "qvecs" => Any[Any[[1, 0, 0]], Any[[0, 1, 0]], Any[[0, 0, 1]]],
+        "uvecs" => Any[Any[[1, 0]], Any[[0, 1]], Any[[1, 1]]],
+    )
+    @test LATeachingSuite.svd_rank(svd_spec) == 2
+    @test LATeachingSuite.svd_left_vectors(svd_spec, 1) == Any[[0, 1]]
+    @test LATeachingSuite.svd_right_vectors(svd_spec, 3) == Any[[1, 0, 0]]
+    @test LATeachingSuite.svd_left_vectors(svd_spec, 2) === nothing
+end
+
 @testset "Bundle wrapper forwarding contracts" begin
     la = _py_ns_lat()
     seen = Dict{Symbol,Dict{Symbol,Any}}()

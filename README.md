@@ -18,6 +18,8 @@ It provides:
   `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
 - canonical matrix extraction helpers for bundle specs:
   `qr_matrices_from_spec`, `eig_matrices_from_spec`, `svd_matrices_from_spec`
+- semantic spec-query helpers:
+  `svd_rank`, `eig_eigenvectors`, `svd_left_vectors`, `svd_right_vectors`
 - canonical modern replacements for `nM` render helpers:
   `ge_svg`, `qr_svg`, `eig_svg`, `svd_svg`
 - top-level umbrella bridge/display wrappers such as:
@@ -43,6 +45,13 @@ helpers and then extract matrices from the returned spec:
 - `svg, qr_spec = qr_bundle(A)` then `qr_matrices_from_spec(qr_spec)`
 - `svg, eig_spec = eig_bundle(A)` then `eig_matrices_from_spec(eig_spec)`
 - `svg, svd_spec = svd_bundle(A)` then `svd_matrices_from_spec(svd_spec)`
+
+Additional semantic queries are available on the same specs:
+
+- `eig_eigenvectors(eig_spec, λ)` returns the eigenvector group for eigenvalue `λ`
+- `svd_rank(svd_spec)` returns the rank implied by the nonzero singular values
+- `svd_left_vectors(svd_spec, σ)` returns the left singular vector group for `σ`
+- `svd_right_vectors(svd_spec, σ)` returns the right singular vector group for `σ`
 
 ## Package Roles
 
