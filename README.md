@@ -98,7 +98,7 @@ For Julia workflows that need the Python-backed display stack, the effective
 interop path is:
 
 ```text
-LATeachingSuite -> GenLAProblems / PythonBridge -> LAFigureSpecs -> matrixlayout
+LATeachingSuite / PythonBridge -> LAFigureSpecs -> matrixlayout
 ```
 
 ## Which Package To Import

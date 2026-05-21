@@ -23,11 +23,11 @@ end
     _py_setattr_lat(ml, "__version__", "ml-test-version")
     _py_setattr_lat(ml, "__build__", "ml-test-build")
 
-    old_la = GenLAProblems._LAFigureSpecs[]
-    old_ml = GenLAProblems._matrixlayout[]
+    old_la = LATeachingSuite._LAFigureSpecs[]
+    old_ml = LATeachingSuite._matrixlayout[]
     try
-        GenLAProblems._LAFigureSpecs[] = la
-        GenLAProblems._matrixlayout[] = ml
+        LATeachingSuite._LAFigureSpecs[] = la
+        LATeachingSuite._matrixlayout[] = ml
 
         @test LATeachingSuite.load_LAFigureSpecs() === la
         @test LATeachingSuite.load_matrixlayout() === ml
@@ -36,8 +36,8 @@ end
         @test LATeachingSuite.ml_version() == "ml-test-version"
         @test LATeachingSuite.ml_build() == "ml-test-build"
     finally
-        GenLAProblems._LAFigureSpecs[] = old_la
-        GenLAProblems._matrixlayout[] = old_ml
+        LATeachingSuite._LAFigureSpecs[] = old_la
+        LATeachingSuite._matrixlayout[] = old_ml
     end
 end
 
@@ -60,12 +60,12 @@ end
 
     la_ge = _py_ns_lat()
     _py_setattr_lat(la_ge, "ge_svg", (args...; kwargs...) -> "<svg>ge</svg>")
-    old_ge_la = GenLAProblems._LAFigureSpecs[]
+    old_ge_la = LATeachingSuite._LAFigureSpecs[]
     try
-        GenLAProblems._LAFigureSpecs[] = la_ge
+        LATeachingSuite._LAFigureSpecs[] = la_ge
         @test LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]) isa LATeachingSuite.SVGOut
     finally
-        GenLAProblems._LAFigureSpecs[] = old_ge_la
+        LATeachingSuite._LAFigureSpecs[] = old_ge_la
     end
 
     ge_seen = Dict{Symbol,Any}()
@@ -77,13 +77,13 @@ end
         "<svg>ge-bg</svg>"
     end)
     try
-        GenLAProblems._LAFigureSpecs[] = la_ge_bg
+        LATeachingSuite._LAFigureSpecs[] = la_ge_bg
         svg = LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; bg_for_entries=bg_specs)
         @test svg isa LATeachingSuite.SVGOut
         @test ge_seen[:bg_for_entries] == bg_specs
         @test get(ge_seen, :decorators, nothing) === nothing
     finally
-        GenLAProblems._LAFigureSpecs[] = old_ge_la
+        LATeachingSuite._LAFigureSpecs[] = old_ge_la
     end
 
     la = _py_ns_lat()
@@ -119,11 +119,11 @@ end
             "R" => [1 0; 0 1],
         )
     )
-    old_la = GenLAProblems._LAFigureSpecs[]
-    old_ml = GenLAProblems._matrixlayout[]
+    old_la = LATeachingSuite._LAFigureSpecs[]
+    old_ml = LATeachingSuite._matrixlayout[]
     try
-        GenLAProblems._LAFigureSpecs[] = la
-        GenLAProblems._matrixlayout[] = ml
+        LATeachingSuite._LAFigureSpecs[] = la
+        LATeachingSuite._matrixlayout[] = ml
         svg_only = LATeachingSuite.qr_svg([1 0; 0 1])
         svg_bundle, spec = LATeachingSuite.qr_bundle([1 0; 0 1])
         svg_figure, mats = LATeachingSuite.qr_figure([1 0; 0 1])
@@ -143,8 +143,8 @@ end
         @test Q == [1 0; 0 1]
         @test R == [1 0; 0 1]
     finally
-        GenLAProblems._LAFigureSpecs[] = old_la
-        GenLAProblems._matrixlayout[] = old_ml
+        LATeachingSuite._LAFigureSpecs[] = old_la
+        LATeachingSuite._matrixlayout[] = old_ml
     end
 end
 
@@ -200,9 +200,9 @@ end
     _py_setattr_lat(la, "eig_bundle", fake_bundle(:eig))
     _py_setattr_lat(la, "svd_bundle", fake_bundle(:svd))
 
-    old_la = GenLAProblems._LAFigureSpecs[]
+    old_la = LATeachingSuite._LAFigureSpecs[]
     try
-        GenLAProblems._LAFigureSpecs[] = la
+        LATeachingSuite._LAFigureSpecs[] = la
 
         for (kind, fn) in [
             (:ge, LATeachingSuite.ge_bundle),
@@ -220,7 +220,7 @@ end
             @test Base.invokelatest(py.pyconvert, Int, spec["argc"]) == 1
         end
     finally
-        GenLAProblems._LAFigureSpecs[] = old_la
+        LATeachingSuite._LAFigureSpecs[] = old_la
     end
 end
 
@@ -235,9 +235,9 @@ end
         ))
     )
 
-    old_la = GenLAProblems._LAFigureSpecs[]
+    old_la = LATeachingSuite._LAFigureSpecs[]
     try
-        GenLAProblems._LAFigureSpecs[] = la
+        LATeachingSuite._LAFigureSpecs[] = la
         err = try
             LATeachingSuite.ge_bundle([1 0; 0 1])
             nothing
@@ -248,7 +248,7 @@ end
         @test occursin("render failed", sprint(showerror, err))
         @test occursin("latexmk failed", sprint(showerror, err))
     finally
-        GenLAProblems._LAFigureSpecs[] = old_la
+        LATeachingSuite._LAFigureSpecs[] = old_la
     end
 end
 
@@ -257,12 +257,12 @@ end
     _py_setattr_lat(la, "eig_svg", (args...; kwargs...) -> "<svg>eig</svg>")
     _py_setattr_lat(la, "svd_svg", (args...; kwargs...) -> "<svg>svd</svg>")
 
-    old_la = GenLAProblems._LAFigureSpecs[]
+    old_la = LATeachingSuite._LAFigureSpecs[]
     try
-        GenLAProblems._LAFigureSpecs[] = la
+        LATeachingSuite._LAFigureSpecs[] = la
         @test LATeachingSuite.eig_svg([1 0; 0 1]) isa LATeachingSuite.SVGOut
         @test LATeachingSuite.svd_svg([1 0; 0 1]) isa LATeachingSuite.SVGOut
     finally
-        GenLAProblems._LAFigureSpecs[] = old_la
+        LATeachingSuite._LAFigureSpecs[] = old_la
     end
 end

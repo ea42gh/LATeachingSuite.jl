@@ -105,7 +105,7 @@ For Python-backed Julia display workflows, the effective interoperability path
 is:
 
 ```text
-LATeachingSuite -> GenLAProblems / PythonBridge -> LAFigureSpecs -> matrixlayout
+LATeachingSuite / PythonBridge -> LAFigureSpecs -> matrixlayout
 ```
 
 ## User Entry Points

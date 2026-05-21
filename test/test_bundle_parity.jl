@@ -43,10 +43,10 @@ end
     _py_setattr_bundle(la, "svd_bundle", fake_bundle("svd"))
     _py_setattr_bundle(la, "qr_bundle", fake_bundle("qr"))
 
-    old_la = GenLAProblems._LAFigureSpecs[]
+    old_la = LATeachingSuite._LAFigureSpecs[]
     A = [1 0; 0 1]
     try
-        GenLAProblems._LAFigureSpecs[] = la
+        LATeachingSuite._LAFigureSpecs[] = la
         for (bundle_sym, jl_fn) in [
             (:ge_bundle, LATeachingSuite.ge_bundle),
             (:eig_bundle, LATeachingSuite.eig_bundle),
@@ -60,6 +60,6 @@ end
             @test Base.invokelatest(py.pyconvert, String, py_bundle["svg"]) == _svg.svg
         end
     finally
-        GenLAProblems._LAFigureSpecs[] = old_la
+        LATeachingSuite._LAFigureSpecs[] = old_la
     end
 end
