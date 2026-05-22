@@ -544,6 +544,7 @@ export charpoly
 export gram_schmidt_w, normalize_columns, qr_layout, gram_schmidt_stable
 export split_R_RHS, particular_solution, homogeneous_solutions
 export normal_eq_reduce_to_ref, reduce_to_ref
+export decorate_ge
 export ref!, show_layout!, show_system, create_cascade!
 export show_backsubstitution!, show_solution!
 export show_backsubstitution, show_forwardsubstitution, show_solution
