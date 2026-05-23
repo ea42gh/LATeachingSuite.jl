@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/ea42gh/LATeachingSuite.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/ea42gh/LATeachingSuite.jl/actions/workflows/CI.yml)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ea42gh/LATeachingSuite.jl/HEAD?filepath=LATeachingSuite_demo.ipynb)
+[![Docs](https://img.shields.io/badge/docs-architecture-blue.svg)](https://github.com/ea42gh/LATeachingSuite.jl/blob/main/docs/architecture.md)
 
 `LATeachingSuite` is the umbrella package for teaching-oriented linear algebra
 workflows built on top of `GenLAProblems`.
