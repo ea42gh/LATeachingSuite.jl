@@ -55,6 +55,7 @@ const _sympy = Ref{Any}(nothing)
 
 include("PythonBridgeUtils.jl")
 include("SymPyHelpers.jl")
+@reexport using .SymPyHelpers
 using .SymPyHelpers: sym_to_julia_vec, sym_to_julia_mat
 
 function Base.getproperty(::SympyProxy, name::Symbol)
