@@ -103,7 +103,7 @@ end
         Any[nothing, [1 0; 0 1], [1 0; 0 1], [1 0; 0 1]],
         Any[[1 0; 0 1], [1 0; 0 1], [1 0; 0 1], nothing],
     ])
-    _py_setattr_lat(la, "qr_tbl_spec_from_matrices", (mats; kwargs...) ->
+    _py_setattr_lat(la, "qr_spec_from_matrices", (mats; kwargs...) ->
         Base.invokelatest(py.pydict, Dict("kind" => "qr", "matrices" => mats))
     )
     _py_setattr_lat(ml, "render_qr_svg", (; spec, kwargs...) -> "<svg>qr-figure</svg>")
