@@ -111,6 +111,7 @@ jobs:
               end
           end
 
-          @assert _hasproperty(la, :ge_tbl_spec)
-          @assert _hasproperty(la, :qr_tbl_spec)
+          @assert _hasproperty(la, :ge_spec)
+          @assert _hasproperty(la, :qr_spec)
+          @assert _hasproperty(la, :qr_spec_from_matrices)
           @assert _hasproperty(ml, :render_ge_svg)
