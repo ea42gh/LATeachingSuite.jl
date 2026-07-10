@@ -392,6 +392,92 @@ function decorate_ge(description, pivot_cols, sizeA;
     ge_variable_type(pivot_cols, N)
 end
 
+function _ge_pivots_to_locs(pivot_list)
+    pivot_list === nothing && return nothing
+    return [Dict("grid" => Tuple(spec[1]), "entries" => spec[2]) for spec in pivot_list]
+end
+
+function _ge_paths_to_rowechelon(path_list)
+    path_list === nothing && return nothing
+    return [
+        Dict(
+            "grid" => (spec[1], spec[2]),
+            "pivots" => spec[3],
+            "case" => spec[4],
+            "color" => (length(spec) >= 5 ? spec[5] : "blue"),
+        )
+        for spec in path_list
+    ]
+end
+
+function _ge_backgrounds_to_decorations(bg_list)
+    bg_list === nothing && return nothing
+    decorations = Any[]
+
+    function append_spec!(spec)
+        if !(spec isa AbstractVector)
+            return nothing
+        end
+        if length(spec) < 4
+            for item in spec
+                append_spec!(item)
+            end
+            return nothing
+        end
+
+        grid = (spec[1], spec[2])
+        locs = spec[3]
+        background = spec[4]
+        padding_pt = length(spec) >= 5 ? spec[5] : 0
+        for loc in locs
+            if loc isa Tuple
+                push!(
+                    decorations,
+                    Dict(
+                        "grid" => grid,
+                        "entries" => [loc],
+                        "background" => background,
+                        "padding_pt" => padding_pt,
+                    ),
+                )
+            else
+                (r1, c1), (r2, c2) = loc
+                push!(
+                    decorations,
+                    Dict(
+                        "grid" => grid,
+                        "rows" => (r1, r2),
+                        "cols" => (c1, c2),
+                        "background" => background,
+                        "padding_pt" => padding_pt,
+                    ),
+                )
+            end
+        end
+        nothing
+    end
+
+    for spec in bg_list
+        append_spec!(spec)
+    end
+    return decorations
+end
+
+"""
+    ge_decorations(description, pivot_cols, sizeA; kwargs...)
+
+Return canonical GE decoration keyword fields for `ge_svg`.
+"""
+function ge_decorations(description, pivot_cols, sizeA; kwargs...)
+    pivot_list, bg_list, path_list, variable_summary = decorate_ge(description, pivot_cols, sizeA; kwargs...)
+    return (
+        pivot_locs = _ge_pivots_to_locs(pivot_list),
+        decorations = _ge_backgrounds_to_decorations(bg_list),
+        rowechelon_paths = _ge_paths_to_rowechelon(path_list),
+        variable_summary = variable_summary,
+    )
+end
+
 # ------------------------------------------------------------------------------
 # ---------------------------------------------------------------------- charpoly
 # ------------------------------------------------------------------------------

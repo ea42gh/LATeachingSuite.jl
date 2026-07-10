@@ -98,11 +98,15 @@ end
         spec = Base.invokelatest(py.pydict, Dict("kind" => "qr", "matrices" => matrices))
         Base.invokelatest(py.pydict, Dict("spec" => spec, "svg" => "<svg>qr-bundle</svg>"))
     end)
-    _py_setattr_lat(la, "gram_schmidt_qr_matrices", (args...; kwargs...) -> Any[
-        Any[nothing, nothing, [1 0; 0 1], [1 0; 0 1]],
-        Any[nothing, [1 0; 0 1], [1 0; 0 1], [1 0; 0 1]],
-        Any[[1 0; 0 1], [1 0; 0 1], [1 0; 0 1], nothing],
-    ])
+    captured_qr_arg = Ref{Any}(nothing)
+    _py_setattr_lat(la, "gram_schmidt_qr_matrices", (args...; kwargs...) -> begin
+        captured_qr_arg[] = first(args)
+        Any[
+            Any[nothing, nothing, [1 0; 0 1], [1 0; 0 1]],
+            Any[nothing, [1 0; 0 1], [1 0; 0 1], [1 0; 0 1]],
+            Any[[1 0; 0 1], [1 0; 0 1], [1 0; 0 1], nothing],
+        ]
+    end)
     _py_setattr_lat(la, "qr_spec_from_matrices", (mats; kwargs...) ->
         Base.invokelatest(py.pydict, Dict("kind" => "qr", "matrices" => mats))
     )
@@ -136,6 +140,8 @@ end
         @test svg_figure isa LATeachingSuite.SVGOut
         @test svg_figure.svg == "<svg>qr-figure</svg>"
         @test mats[1][3] == [1 0; 0 1]
+        @test captured_qr_arg[] == [[1, 0], [0, 1]]
+        @test captured_qr_arg[] isa Vector{<:Vector}
         @test qr.Q == [1 0; 0 1]
         @test qr.R == [1 0; 0 1]
         @test qr_grid.Q == [1 0; 0 1]

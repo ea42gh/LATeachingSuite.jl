@@ -254,6 +254,7 @@ using Reexport
     lhs_matrix,
     rhs_matrix,
     rhs_column,
+    ge_decorations,
     show_ge_final,
     py_show_svg,
     show_svg,
@@ -375,13 +376,16 @@ const _svd_bundle = _bundle_wrapper(:svd_bundle)
 ge_svg(args...; kwargs...) = matrixlayout_ge(args...; kwargs...)
 qr_svg(args...; kwargs...) = first(qr_bundle(args...; kwargs...))
 
+_qr_figure_input(A::AbstractMatrix) = [[A[i, j] for j in axes(A, 2)] for i in axes(A, 1)]
+_qr_figure_input(A) = A
+
 function qr_figure(args...; kwargs...)
     length(args) == 1 || throw(ArgumentError("qr_figure expects a single matrix A"))
     matrices_kw, spec_kw, render_kw = _split_qr_figure_kwargs(kwargs)
     la = load_LAFigureSpecs()
     gram_schmidt_qr_matrices = _pygetattr(la, :gram_schmidt_qr_matrices)
     qr_spec_from_matrices = _pygetattr(la, :qr_spec_from_matrices)
-    matrices = _pycall(gram_schmidt_qr_matrices, args...; matrices_kw...)
+    matrices = _pycall(gram_schmidt_qr_matrices, _qr_figure_input(args[1]); matrices_kw...)
     spec = _pycall(qr_spec_from_matrices, matrices; spec_kw...)
     svg = _render_qr_from_spec(spec; render_kw...)
     return _show_svg(svg), materialize_python_value(matrices)
@@ -545,7 +549,7 @@ export charpoly
 export gram_schmidt_w, normalize_columns, qr_layout, gram_schmidt_stable
 export split_R_RHS, particular_solution, homogeneous_solutions
 export normal_eq_reduce_to_ref, reduce_to_ref
-export decorate_ge
+export decorate_ge, ge_decorations
 export ref!, show_layout!, show_system, create_cascade!
 export show_backsubstitution!, show_solution!
 export show_backsubstitution, show_forwardsubstitution, show_solution

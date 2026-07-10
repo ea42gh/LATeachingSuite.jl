@@ -85,8 +85,10 @@ using LinearAlgebra
     @test isdefined(LATeachingSuite, :qr_bundle)
     @test isdefined(LATeachingSuite, :eig_bundle)
     @test isdefined(LATeachingSuite, :svd_bundle)
+    @test isdefined(LATeachingSuite, :ge_decorations)
     @test isdefined(LATeachingSuite.WorkflowDisplay, :show_layout!)
     @test isdefined(LATeachingSuite.WorkflowDisplay, :ShowGE)
+    @test isdefined(LATeachingSuite.WorkflowDisplay, :ge_decorations)
     @test isdefined(LATeachingSuite.PythonBridge, :ensure_pythoncall!)
     @test isdefined(LATeachingSuite.PythonBridge, :load_LAFigureSpecs)
     @test hasmethod(LATeachingSuite.load_LAFigureSpecs, Tuple{})
@@ -136,6 +138,26 @@ using LinearAlgebra
     mats, pivots, _ = reduce_to_ref(A; gj=true)
     @test size(mats[end][end]) == size(A)
     @test pivots == [1, 2]
+
+    dec = ge_decorations([], [1, 2], size(A); pivot_color="yellow!40")
+    @test haskey(dec, :pivot_locs)
+    @test haskey(dec, :decorations)
+    @test haskey(dec, :rowechelon_paths)
+    @test haskey(dec, :variable_summary)
+    @test dec.pivot_locs[1]["grid"] == (0, 1)
+    @test dec.decorations[1]["background"] == "yellow!40"
+    @test dec.rowechelon_paths[1]["case"] == "vh"
+
+    nested_bg = Any[
+        Any[
+            Any[0, 1, Any[(0, 0)], "yellow!40"],
+            Any[0, 1, Any[(1, 1)], "gray!20"],
+        ],
+    ]
+    nested_decor = LATeachingSuite._ge_backgrounds_to_decorations(nested_bg)
+    @test length(nested_decor) == 2
+    @test nested_decor[1]["entries"] == [(0, 0)]
+    @test nested_decor[2]["entries"] == [(1, 1)]
 
     Adef = Rational.(GenLAProblems.gen_non_diagonalizable_eigenproblem(2, 0; maxint=2))
     @test LATeachingSuite.charpoly(Adef) == LATeachingSuite.charpoly([2 1 0; 0 2 0; 0 0 0])
