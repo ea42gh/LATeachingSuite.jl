@@ -12,12 +12,8 @@ function _system_matrix_rhs(pb::ShowGE{T}; b_mat=1, b_col=1) where T <: Number
     else
        b = zeros(eltype(pb.A), size(A,1), 1)
     end
-    if A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}}
-        A = _python_exact_literal(A)
-    end
-    if b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}}
-        b = _python_exact_literal(b)
-    end
+    A = _python_exact_literal_if_needed(A)
+    b = _python_exact_literal_if_needed(b)
     return A, b
 end
 
@@ -30,7 +26,7 @@ function show_system(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fi
     tex = _pycall(linear_system_tex, A, b; var_name=var_name)
     py = _ensure_pythoncall()
     tex = Base.invokelatest(py.pyconvert, String, tex)
-    bs = _pyimport("matrixlayout.backsubst")
+    bs = load_matrixlayout()
     backsubst_svg = _pygetattr(bs, :backsubst_svg)
     resolved_output_dir = _resolve_output_dir(output_dir, tmp_dir, pb.tmp_dir)
     svg = _pycall(backsubst_svg; system_txt=tex, show_system=true,
@@ -58,6 +54,11 @@ function _encode_exact(x)
     end
     return x
 end
+
+_is_int_pair(x) = x isa Tuple && length(x) == 2 && x[1] isa Integer && x[2] isa Integer
+_is_encoded_complex_rational(x) = x isa Tuple && length(x) == 2 && _is_int_pair(x[1]) && _is_int_pair(x[2])
+_is_exact_bridge_scalar(x) = x isa Rational || x isa Complex{<:Rational} || _is_int_pair(x) || _is_encoded_complex_rational(x)
+_needs_python_exact_literal(A) = A isa AbstractArray && any(_is_exact_bridge_scalar, A)
 
 function _rational_str(r::Rational)
     return string(numerator(r), "/", denominator(r))
@@ -109,6 +110,8 @@ function _python_exact_literal(A)
     return A
 end
 
+_python_exact_literal_if_needed(A) = _needs_python_exact_literal(A) ? _python_exact_literal(A) : A
+
 function _rhs_vector(b, b_col)
     if b isa AbstractMatrix
         if size(b, 2) == 1
@@ -123,7 +126,14 @@ function _rhs_vector(b, b_col)
 end
 
 function _backsub_ref(pb::ShowGE; b_mat=1, b_col=1)
-    Ab = pb.matrices[end][end]
+    if isdefined(pb, :matrices) && pb.matrices !== nothing
+        Ab = pb.matrices[end][end]
+    else
+        rhs = _combined_rhs_matrix(pb)
+        Ab_full = rhs === nothing ? pb.A : [pb.A rhs]
+        mats, _, _ = reduce_to_ref(Ab_full, n=size(pb.A, 2), gj=false)
+        Ab = mats[end][end]
+    end
     if Ab isa AbstractArray{<:AbstractString} || any(x -> x isa AbstractString, Ab)
         gj = false
         if isdefined(pb, :desc)
@@ -151,16 +161,8 @@ function _backsub_ref(pb::ShowGE; b_mat=1, b_col=1)
         b = zeros(eltype(A), size(A, 1), 1)
     end
     b = _rhs_vector(b, b_col)
-    if A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}}
-        A = _python_exact_literal(A)
-    end
-    if b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}}
-        if b isa AbstractVector
-            b = _python_exact_literal(b)
-        else
-            b = _python_exact_literal(b)
-        end
-    end
+    A = _python_exact_literal_if_needed(A)
+    b = _python_exact_literal_if_needed(b)
     return A, b
 end
 
@@ -172,15 +174,9 @@ function _forwardsub_ref(pb::ShowGE; b_mat=1, b_col=1, exact=true)
         b = zeros(eltype(A), size(A, 1), 1)
     end
     b = _rhs_vector(b, b_col)
-    if exact && (A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}})
-        A = _python_exact_literal(A)
-    end
-    if exact && (b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}})
-        if b isa AbstractVector
-            b = _python_exact_literal(b)
-        else
-            b = _python_exact_literal(b)
-        end
+    if exact
+        A = _python_exact_literal_if_needed(A)
+        b = _python_exact_literal_if_needed(b)
     end
     return A, b
 end
@@ -290,8 +286,8 @@ function show_forwardsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::
     A, b = _forwardsub_ref(pb; b_mat=b_mat, b_col=b_col, exact=false)
     Arev = A[end:-1:1, end:-1:1]
     brev = b[end:-1:1]
-    A2 = (Arev isa AbstractArray{<:Rational} || Arev isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(Arev) : Arev
-    b2 = (brev isa AbstractArray{<:Rational} || brev isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(brev) : brev
+    A2 = _python_exact_literal_if_needed(Arev)
+    b2 = _python_exact_literal_if_needed(brev)
     lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
     lines = _relabel_cascade(lines, size(A, 1); var_name=var_name)
     if render_svg
@@ -324,8 +320,8 @@ raw"""
     SymPy reconstructs exact rationals on the Python side).
 """
 function show_backsubstitution(A, b; var_name::String="x", fig_scale=1, output_dir=nothing, tmp_dir="/tmp/la/run", render_svg=true, render_opts=nothing)
-    A2 = (A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(A) : A
-    b2 = (b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(b) : b
+    A2 = _python_exact_literal_if_needed(A)
+    b2 = _python_exact_literal_if_needed(b)
     lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
     if render_svg
         return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=_resolve_output_dir(output_dir, tmp_dir), render_opts=render_opts)
@@ -344,8 +340,8 @@ converted to tuples for exact SymPy reconstruction.
 function show_forwardsubstitution(A, b; var_name::String="x", fig_scale=1, output_dir=nothing, tmp_dir="/tmp/la/run", render_svg=true, render_opts=nothing)
     Arev = A[end:-1:1, end:-1:1]
     brev = b[end:-1:1]
-    A2 = (Arev isa AbstractArray{<:Rational} || Arev isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(Arev) : Arev
-    b2 = (brev isa AbstractArray{<:Rational} || brev isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(brev) : brev
+    A2 = _python_exact_literal_if_needed(Arev)
+    b2 = _python_exact_literal_if_needed(brev)
     lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
     lines = _relabel_cascade(lines, size(A, 1); var_name=var_name)
     if render_svg

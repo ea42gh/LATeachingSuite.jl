@@ -189,14 +189,104 @@ end
 @testset "Exact rational Python literal bridge" begin
     A = Rational{Int}[1//2 -3//4; 0//1 5//6]
     b = Rational{Int}[7//8, -9//10]
+    C = Complex{Rational{Int}}[complex(1//2, 3//4) 0//1; complex(-2//3, 1//5) 4//1]
+    encoded = [((1, 2), (3, 4)) (0, 1); (-2, 3) ((4, 1), (0, 1))]
 
     A2 = LATeachingSuite._python_exact_literal(A)
     b2 = LATeachingSuite._python_exact_literal(b)
+    C2 = LATeachingSuite._python_exact_literal(C)
+    encoded2 = LATeachingSuite._python_exact_literal_if_needed(encoded)
 
     @test A2 == [[(1, 2), (-3, 4)], [(0, 1), (5, 6)]]
     @test b2 == [(7, 8), (-9, 10)]
+    @test C2 == [[((1, 2), (3, 4)), ((0, 1), (0, 1))], [((-2, 3), (1, 5)), ((4, 1), (0, 1))]]
+    @test encoded2 == [[((1, 2), (3, 4)), (0, 1)], [(-2, 3), ((4, 1), (0, 1))]]
     @test A2 isa Vector{<:Vector}
     @test b2 isa Vector
+end
+
+@testset "ShowGE system display exact RHS bridge" begin
+    A, _, B = gen_gj_pb(3, 5, 3; maxint=2, pivot_in_first_col=true, num_rhs=1, has_zeros=true)
+    pb = ShowGE{Rational{Int}}(A, B)
+    A2, b2 = LATeachingSuite._system_matrix_rhs(pb; b_mat=1, b_col=1)
+
+    @test A2 == LATeachingSuite._python_exact_literal(pb.A)
+    @test b2 == LATeachingSuite._python_exact_literal(vec(pb.B[1]))
+
+    la = _py_ns_lat()
+    ml = _py_ns_lat()
+    seen = Dict{Symbol,Any}()
+    _py_setattr_lat(la, "linear_system_tex", (args...; kwargs...) -> begin
+        seen[:A] = args[1]
+        seen[:b] = args[2]
+        seen[:kwargs] = Dict(kwargs)
+        raw"\systeme{x_1=1}"
+    end)
+    _py_setattr_lat(ml, "backsubst_svg", (args...; kwargs...) -> begin
+        merge!(seen, Dict(kwargs))
+        "<svg>system</svg>"
+    end)
+
+    old_la = LATeachingSuite._LAFigureSpecs[]
+    old_ml = LATeachingSuite._matrixlayout[]
+    try
+        LATeachingSuite._LAFigureSpecs[] = la
+        LATeachingSuite._matrixlayout[] = ml
+        svg = show_system(pb; b_mat=1, b_col=1, fig_scale=1.2)
+        @test svg isa LATeachingSuite.SVGOut
+        @test seen[:A] == A2
+        @test seen[:b] == b2
+        @test seen[:show_system] === true
+        @test seen[:show_cascade] === false
+        @test seen[:show_solution] === false
+        @test seen[:fig_scale] == 1.2
+    finally
+        LATeachingSuite._LAFigureSpecs[] = old_la
+        LATeachingSuite._matrixlayout[] = old_ml
+    end
+end
+
+@testset "ShowGE backsubstitution before ref" begin
+    A, _, B = gen_gj_pb(3, 5, 3; maxint=2, pivot_in_first_col=true, num_rhs=1, has_zeros=true)
+    pb = ShowGE{Rational{Int}}(A, B)
+    A2, b2 = LATeachingSuite._backsub_ref(pb; b_mat=1, b_col=1)
+    @test A2 isa Vector{<:Vector}
+    @test b2 isa Vector
+
+    la = _py_ns_lat()
+    ml = _py_ns_lat()
+    seen = Dict{Symbol,Any}()
+    _py_setattr_lat(la, "backsubstitution_tex", (args...; kwargs...) -> begin
+        seen[:A] = args[1]
+        seen[:b] = args[2]
+        seen[:kwargs] = Dict(kwargs)
+        ["x_1 = 1"]
+    end)
+    _py_setattr_lat(ml, "backsubst_svg", (args...; kwargs...) -> begin
+        merge!(seen, Dict(kwargs))
+        "<svg>backsub</svg>"
+    end)
+
+    old_la = LATeachingSuite._LAFigureSpecs[]
+    old_ml = LATeachingSuite._matrixlayout[]
+    try
+        LATeachingSuite._LAFigureSpecs[] = la
+        LATeachingSuite._matrixlayout[] = ml
+        svg = show_backsubstitution!(pb; b_mat=1, b_col=1, fig_scale=1.3,
+            render_opts=Dict("padding" => (LATeachingSuite.mm_to_px(10), LATeachingSuite.mm_to_px(10), 4, 4), "frame" => true))
+        @test svg isa LATeachingSuite.SVGOut
+        @test seen[:A] == A2
+        @test seen[:b] == b2
+        @test seen[:show_system] === false
+        @test seen[:show_cascade] === true
+        @test seen[:show_solution] === false
+        @test seen[:fig_scale] == 1.3
+        @test seen[:render_opts]["padding"] == (LATeachingSuite.mm_to_px(10), LATeachingSuite.mm_to_px(10), 4, 4)
+        @test seen[:render_opts]["frame"] === true
+    finally
+        LATeachingSuite._LAFigureSpecs[] = old_la
+        LATeachingSuite._matrixlayout[] = old_ml
+    end
 end
 
 @testset "Bundle wrapper forwarding contracts" begin

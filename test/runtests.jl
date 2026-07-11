@@ -15,7 +15,7 @@ let
     repo = normpath(joinpath(@__DIR__, "..", ".."))
     py_paths = [
         joinpath(repo, ".pydeps"),
-        joinpath(repo, "LAFigureSpecs"),
+        joinpath(repo, "la_figures"),
         joinpath(repo, "matrixlayout"),
     ]
     existing = get(ENV, "PYTHONPATH", "")
