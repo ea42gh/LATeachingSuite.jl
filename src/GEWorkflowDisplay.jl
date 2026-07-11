@@ -13,10 +13,10 @@ function _system_matrix_rhs(pb::ShowGE{T}; b_mat=1, b_col=1) where T <: Number
        b = zeros(eltype(pb.A), size(A,1), 1)
     end
     if A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}}
-        A = _encode_exact.(A)
+        A = _python_exact_literal(A)
     end
     if b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}}
-        b = _encode_exact.(b)
+        b = _python_exact_literal(b)
     end
     return A, b
 end
@@ -82,14 +82,31 @@ function _encode_exact_vector(b::AbstractVector)
     for i in eachindex(b)
         val = b[i]
         if val isa Rational
-            out[i] = _rational_str(val)
+            out[i] = _encode_exact(val)
         elseif val isa Complex{<:Rational}
-            out[i] = _complex_rational_str(val)
+            out[i] = _encode_exact(val)
         else
             out[i] = val
         end
     end
     return out
+end
+
+function _python_matrix_literal(A::AbstractMatrix)
+    return [[_encode_exact(A[i, j]) for j in axes(A, 2)] for i in axes(A, 1)]
+end
+
+function _python_vector_literal(b::AbstractVector)
+    return [_encode_exact(b[i]) for i in eachindex(b)]
+end
+
+function _python_exact_literal(A)
+    if A isa AbstractMatrix
+        return _python_matrix_literal(A)
+    elseif A isa AbstractVector
+        return _python_vector_literal(A)
+    end
+    return A
 end
 
 function _rhs_vector(b, b_col)
@@ -135,19 +152,19 @@ function _backsub_ref(pb::ShowGE; b_mat=1, b_col=1)
     end
     b = _rhs_vector(b, b_col)
     if A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}}
-        A = _encode_exact.(A)
+        A = _python_exact_literal(A)
     end
     if b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}}
         if b isa AbstractVector
-            b = _encode_exact_vector(b)
+            b = _python_exact_literal(b)
         else
-            b = _encode_exact.(b)
+            b = _python_exact_literal(b)
         end
     end
     return A, b
 end
 
-function _forwardsub_ref(pb::ShowGE; b_mat=1, b_col=1)
+function _forwardsub_ref(pb::ShowGE; b_mat=1, b_col=1, exact=true)
     A = pb.A
     if _rhs_col_count(pb) > 0
         b = rhs_column(pb, Int(b_mat), Int(b_col); step=:final)
@@ -155,14 +172,14 @@ function _forwardsub_ref(pb::ShowGE; b_mat=1, b_col=1)
         b = zeros(eltype(A), size(A, 1), 1)
     end
     b = _rhs_vector(b, b_col)
-    if A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}}
-        A = _encode_exact.(A)
+    if exact && (A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}})
+        A = _python_exact_literal(A)
     end
-    if b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}}
+    if exact && (b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}})
         if b isa AbstractVector
-            b = _encode_exact_vector(b)
+            b = _python_exact_literal(b)
         else
-            b = _encode_exact.(b)
+            b = _python_exact_literal(b)
         end
     end
     return A, b
@@ -270,8 +287,12 @@ function show_backsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::Str
 end
 # --------------------------------------------------------------------------------------------------------------
 function show_forwardsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, render_svg=true, render_opts=nothing ) where T <: Number
-    A, b = _forwardsub_ref(pb; b_mat=b_mat, b_col=b_col)
-    lines = load_LAFigureSpecs().backsubstitution_tex(A[end:-1:1, end:-1:1], b[end:-1:1], var_name=var_name)
+    A, b = _forwardsub_ref(pb; b_mat=b_mat, b_col=b_col, exact=false)
+    Arev = A[end:-1:1, end:-1:1]
+    brev = b[end:-1:1]
+    A2 = (Arev isa AbstractArray{<:Rational} || Arev isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(Arev) : Arev
+    b2 = (brev isa AbstractArray{<:Rational} || brev isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(brev) : brev
+    lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
     lines = _relabel_cascade(lines, size(A, 1); var_name=var_name)
     if render_svg
         return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.tmp_dir, render_opts=render_opts)
@@ -303,8 +324,8 @@ raw"""
     SymPy reconstructs exact rationals on the Python side).
 """
 function show_backsubstitution(A, b; var_name::String="x", fig_scale=1, output_dir=nothing, tmp_dir="/tmp/la/run", render_svg=true, render_opts=nothing)
-    A2 = (A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}}) ? _encode_exact.(A) : A
-    b2 = (b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}}) ? _encode_exact.(b) : b
+    A2 = (A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(A) : A
+    b2 = (b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(b) : b
     lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
     if render_svg
         return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=_resolve_output_dir(output_dir, tmp_dir), render_opts=render_opts)
@@ -321,9 +342,11 @@ Supports Integer/Float as well as exact `Rational` and `Complex{Rational}` input
 converted to tuples for exact SymPy reconstruction.
 """
 function show_forwardsubstitution(A, b; var_name::String="x", fig_scale=1, output_dir=nothing, tmp_dir="/tmp/la/run", render_svg=true, render_opts=nothing)
-    A2 = (A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}}) ? _encode_exact.(A) : A
-    b2 = (b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}}) ? _encode_exact.(b) : b
-    lines = load_LAFigureSpecs().backsubstitution_tex(A2[end:-1:1, end:-1:1], b2[end:-1:1], var_name=var_name)
+    Arev = A[end:-1:1, end:-1:1]
+    brev = b[end:-1:1]
+    A2 = (Arev isa AbstractArray{<:Rational} || Arev isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(Arev) : Arev
+    b2 = (brev isa AbstractArray{<:Rational} || brev isa AbstractArray{Complex{<:Rational}}) ? _python_exact_literal(brev) : brev
+    lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
     lines = _relabel_cascade(lines, size(A, 1); var_name=var_name)
     if render_svg
         return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=_resolve_output_dir(output_dir, tmp_dir), render_opts=render_opts)

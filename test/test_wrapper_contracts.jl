@@ -186,6 +186,19 @@ end
     @test LATeachingSuite.svd_left_vectors(svd_spec, 2) === nothing
 end
 
+@testset "Exact rational Python literal bridge" begin
+    A = Rational{Int}[1//2 -3//4; 0//1 5//6]
+    b = Rational{Int}[7//8, -9//10]
+
+    A2 = LATeachingSuite._python_exact_literal(A)
+    b2 = LATeachingSuite._python_exact_literal(b)
+
+    @test A2 == [[(1, 2), (-3, 4)], [(0, 1), (5, 6)]]
+    @test b2 == [(7, 8), (-9, 10)]
+    @test A2 isa Vector{<:Vector}
+    @test b2 isa Vector
+end
+
 @testset "Bundle wrapper forwarding contracts" begin
     la = _py_ns_lat()
     seen = Dict{Symbol,Dict{Symbol,Any}}()

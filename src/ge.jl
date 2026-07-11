@@ -896,10 +896,10 @@ function show_solution( matrices; var_name::String="x", fig_scale=1, output_dir=
     A = Ab[:, 1:(size(Ab, 2) - 1)]
     b = Ab[:, end]
     if A isa AbstractArray{<:Rational} || A isa AbstractArray{Complex{<:Rational}}
-        A = _encode_exact.(A)
+        A = _python_exact_literal(A)
     end
     if b isa AbstractArray{<:Rational} || b isa AbstractArray{Complex{<:Rational}}
-        b = _encode_exact.(b)
+        b = _python_exact_literal(b)
     end
     tex = load_LAFigureSpecs().standard_solution_tex(A, b, var_name=var_name)
     if render_svg
