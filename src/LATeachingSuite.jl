@@ -39,15 +39,6 @@ _ensure_pythoncall() = PythonCall
 _pyimport(name::String) = Base.invokelatest(PythonCall.pyimport, name)
 _pycall(f, args...; kwargs...) = Base.invokelatest(PythonCall.pycall, f, args...; kwargs...)
 _pygetattr(obj, name::Symbol) = Base.invokelatest(PythonCall.pygetattr, obj, String(name))
-function _pygetattr_fallback(obj, name::Symbol, mod::String)
-    builtins = _pyimport("builtins")
-    has = Base.invokelatest(PythonCall.pycall, _pygetattr(builtins, :hasattr), obj, String(name))
-    if Base.invokelatest(PythonCall.pyconvert, Bool, has)
-        return _pygetattr(obj, name)
-    end
-    sub = _pyimport(mod)
-    return _pygetattr(sub, name)
-end
 
 const _LAFigureSpecs = Ref{Any}(nothing)
 const _matrixlayout = Ref{Any}(nothing)

@@ -409,11 +409,11 @@ function show_layout!(  pb::ShowGE{T}; array_names=nothing, show_variables=true,
     end
     la = load_LAFigureSpecs()
     rhs = _combined_rhs_matrix(pb)
-    ge_tbl_svg = _pygetattr_fallback(la, :ge_tbl_svg, "LAFigureSpecs.ge_convenience")
+    ge_svg = _pygetattr(la, :ge_svg)
     rhs_status = isdefined(pb, :rhs_status) ? pb.rhs_status : Symbol[]
     rhs_status_str = [string(s) for s in rhs_status]
     resolved_output_dir, resolved_output_stem = _resolve_ge_output_targets(pb, output_dir, output_stem)
-    pb.h = _pycall(ge_tbl_svg, pb.A, rhs;
+    pb.h = _pycall(ge_svg, pb.A, rhs;
         show_pivots=true,
         fig_scale=fig_scale,
         variable_summary=show_variables ? pb.basic_var : nothing,
@@ -538,15 +538,6 @@ function rhs_column(pb::ShowGE{T}, b_mat::Integer=1, b_col::Integer=1; step=:fin
     return rhs[:, b_col]
 end
 
-# Compatibility alias for older code. Prefer `rhs_matrix` and `rhs_column`.
-function rhs_block(pb::ShowGE{T}; step=:final, b_col=nothing) where T <: Number
-    rhs = rhs_matrix(pb, 1; step=step)
-    rhs === nothing && return nothing
-    if b_col === nothing
-        return rhs
-    end
-    return rhs[:, b_col]
-end
 # ==============================================================================================================
 # function column_view( Xp, Xh, pivot_cols, rhs )
 # end
@@ -577,7 +568,7 @@ function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex, pivo
         rhs = nothing
     end
     la = load_LAFigureSpecs()
-    ge_tbl_svg = _pygetattr_fallback(la, :ge_tbl_svg, "LAFigureSpecs.ge_convenience")
+    ge_svg = _pygetattr(la, :ge_svg)
     local_render_opts = render_opts === nothing ? Dict{String, Any}() : Dict{String, Any}(render_opts)
     resolved_output_dir = output_dir !== nothing ? output_dir : tmp_dir
     resolved_output_stem = output_stem
@@ -601,7 +592,7 @@ function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex, pivo
     if resolved_output_stem !== nothing
         call_kwargs[:output_stem] = resolved_output_stem
     end
-    s = _pycall(ge_tbl_svg, A, rhs; call_kwargs...)
+    s = _pycall(ge_svg, A, rhs; call_kwargs...)
     _ensure_pythoncall()
     return Base.invokelatest(PythonCall.pyconvert, String, s)
 end
@@ -816,7 +807,7 @@ end
 function _call_ge_convenience(mats_py; kwargs...)
     _ensure_pythoncall()
     la = load_LAFigureSpecs()
-    ge_fn = _pygetattr_fallback(la, :ge_svg, "LAFigureSpecs.ge_convenience")
+    ge_fn = _pygetattr(la, :ge_svg)
     return _pycall(ge_fn, mats_py; kwargs...)
 end
 
