@@ -469,11 +469,11 @@ end
 Return canonical GE decoration keyword fields for `ge_svg`.
 """
 function ge_decorations(description, pivot_cols, sizeA; kwargs...)
-    pivot_list, bg_list, path_list, variable_summary = decorate_ge(description, pivot_cols, sizeA; kwargs...)
+    legacy_pivots, legacy_backgrounds, legacy_paths, variable_summary = decorate_ge(description, pivot_cols, sizeA; kwargs...)
     return (
-        pivot_locs = _ge_pivots_to_locs(pivot_list),
-        decorations = _ge_backgrounds_to_decorations(bg_list),
-        rowechelon_paths = _ge_paths_to_rowechelon(path_list),
+        pivot_locs = _ge_pivots_to_locs(legacy_pivots),
+        decorations = _ge_backgrounds_to_decorations(legacy_backgrounds),
+        rowechelon_paths = _ge_paths_to_rowechelon(legacy_paths),
         variable_summary = variable_summary,
     )
 end

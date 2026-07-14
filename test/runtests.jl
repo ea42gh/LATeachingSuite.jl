@@ -144,6 +144,9 @@ using LinearAlgebra
     @test haskey(dec, :decorations)
     @test haskey(dec, :rowechelon_paths)
     @test haskey(dec, :variable_summary)
+    @test !haskey(dec, :pivot_list)
+    @test !haskey(dec, :bg_list)
+    @test !haskey(dec, :path_list)
     @test dec.pivot_locs[1]["grid"] == (0, 1)
     @test dec.decorations[1]["background"] == "yellow!40"
     @test dec.rowechelon_paths[1]["case"] == "vh"
