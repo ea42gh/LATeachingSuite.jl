@@ -704,91 +704,6 @@ function _ge_to_pylist(obj)
     return obj
 end
 
-function _normalize_bg_specs(specs)
-    if !(specs isa AbstractVector)
-        return [specs]
-    end
-    if isempty(specs)
-        return specs
-    end
-    if length(specs) >= 3 && !(specs[1] isa AbstractVector) && !(specs[2] isa AbstractVector)
-        return [specs]
-    end
-    if !all(x -> x isa AbstractVector, specs)
-        return [specs]
-    end
-    return specs
-end
-
-function _matrix_shape_from_grid(mats_raw, gM::Int, gN::Int)
-    if mats_raw === nothing
-        return 0, 0
-    end
-    try
-        grid = mats_raw[gM + 1]
-        mat = grid[gN + 1]
-        if mat === nothing || mat isa AbstractString
-            return 0, 0
-        elseif mat isa AbstractMatrix
-            return size(mat)
-        elseif mat isa AbstractArray && ndims(mat) == 2
-            return size(mat)
-        elseif mat isa AbstractVector
-            nrows = length(mat)
-            ncols = nrows == 0 ? 0 : length(mat[1])
-            return nrows, ncols
-        end
-    catch
-    end
-    return 0, 0
-end
-
-function _bg_for_entries_to_decorators(bg_for_entries, mats_raw=nothing)
-    if bg_for_entries === nothing
-        return nothing
-    end
-    _ensure_pythoncall()
-    fmt = _pyimport("matrixlayout.formatting")
-    make_decorator = Base.invokelatest(PythonCall.pygetattr, fmt, "make_decorator")
-    sel_entry = Base.invokelatest(PythonCall.pygetattr, fmt, "sel_entry")
-    sel_box = Base.invokelatest(PythonCall.pygetattr, fmt, "sel_box")
-    specs = _normalize_bg_specs(bg_for_entries)
-    decorators = Vector{Any}()
-    for spec in specs
-        if !(spec isa AbstractVector) || length(spec) < 3
-            continue
-        end
-        gM = Int(spec[1])
-        gN = Int(spec[2])
-        nrows, ncols = _matrix_shape_from_grid(mats_raw, gM, gN)
-        entries = spec[3]
-        color = length(spec) >= 4 ? string(spec[4]) : "red!15"
-        if !(entries isa AbstractVector)
-            entries = [entries]
-        end
-        entry_selectors = Vector{Any}()
-        decorator = Base.invokelatest(make_decorator; bg_color=color)
-        for entry in entries
-            if (entry isa AbstractVector || entry isa Tuple) && length(entry) == 2 &&
-               (entry[1] isa AbstractVector || entry[1] isa Tuple) &&
-               (entry[2] isa AbstractVector || entry[2] isa Tuple)
-                i0, j0 = entry[1]
-                i1, j1 = entry[2]
-                push!(entry_selectors, Base.invokelatest(sel_box, (Int(i0), Int(j0)), (Int(i1), Int(j1))))
-            else
-                i0, j0 = entry
-                push!(entry_selectors, Base.invokelatest(sel_entry, Int(i0), Int(j0)))
-            end
-        end
-        push!(decorators, Dict(
-            "grid" => (gM, gN),
-            "entries" => entry_selectors,
-            "decorator" => decorator,
-        ))
-    end
-    return isempty(decorators) ? nothing : decorators
-end
-
 function _prepare_ge_mats(matrices, formatter)
     mats = matrices
     if !_matrices_are_strings(mats)
@@ -796,18 +711,6 @@ function _prepare_ge_mats(matrices, formatter)
     end
     mats = _ge_normalize_grid(mats)
     return _ge_grid_to_lists(mats)
-end
-
-function _merge_bg_decorators(bg_for_entries, decorators, mats)
-    decorators_from_bg = _bg_for_entries_to_decorators(bg_for_entries, mats)
-    if decorators !== nothing && !(decorators isa AbstractVector)
-        decorators = [decorators]
-    end
-    if decorators_from_bg !== nothing
-        bg_for_entries = nothing
-        decorators = decorators === nothing ? decorators_from_bg : vcat(decorators_from_bg, decorators)
-    end
-    return bg_for_entries, decorators
 end
 
 function _call_ge_convenience(mats_py; kwargs...)
