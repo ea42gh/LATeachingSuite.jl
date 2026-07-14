@@ -364,7 +364,7 @@ const _qr_bundle = _bundle_wrapper(:qr_bundle)
 const _eig_bundle = _bundle_wrapper(:eig_bundle)
 const _svd_bundle = _bundle_wrapper(:svd_bundle)
 
-ge_svg(args...; kwargs...) = matrixlayout_ge(args...; kwargs...)
+ge_svg(args...; kwargs...) = _matrixlayout_ge(args...; kwargs...)
 qr_svg(args...; kwargs...) = first(qr_bundle(args...; kwargs...))
 
 _qr_figure_input(A::AbstractMatrix) = [[A[i, j] for j in axes(A, 2)] for i in axes(A, 1)]

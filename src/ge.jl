@@ -373,7 +373,7 @@ function show_layout!(  pb::ShowGE{T}; array_names=nothing, show_variables=true,
         end
             rhs_status = isdefined(pb, :rhs_status) ? [string(s) for s in pb.rhs_status] : nothing
             resolved_output_dir, resolved_output_stem = _resolve_ge_output_targets(pb, output_dir, output_stem)
-            svg = matrixlayout_ge(
+            svg = _matrixlayout_ge(
                 pb.matrices;
                 n_rhs=rhs_groups,
                 pivot_locs=pb.pivot_locs,
@@ -395,7 +395,7 @@ function show_layout!(  pb::ShowGE{T}; array_names=nothing, show_variables=true,
     if isdefined(pb, :matrices) && pb.matrices !== nothing && length(pb.matrices) > 1
             rhs_status = isdefined(pb, :rhs_status) ? [string(s) for s in pb.rhs_status] : nothing
             resolved_output_dir, resolved_output_stem = _resolve_ge_output_targets(pb, output_dir, output_stem)
-            svg = matrixlayout_ge(
+            svg = _matrixlayout_ge(
                 pb.matrices;
                 n_rhs=rhs_groups,
                 pivot_locs=pb.pivot_locs,
@@ -742,7 +742,7 @@ function _ge_pyify_payload(
     )
 end
 
-function matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=nothing, bg_for_entries=nothing,
+function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=nothing, bg_for_entries=nothing,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"], pivot_text_color=nothing,
              ref_path_list=nothing, comment_list=[], variable_summary=nothing, array_names=nothing,
              start_index=1, func=nothing, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,

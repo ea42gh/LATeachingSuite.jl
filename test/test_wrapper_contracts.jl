@@ -73,6 +73,8 @@ end
     try
         LATeachingSuite._LAFigureSpecs[] = la_ge
         @test LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]) isa LATeachingSuite.SVGOut
+        @test !isdefined(LATeachingSuite, :matrixlayout_ge)
+        @test isdefined(LATeachingSuite, :_matrixlayout_ge)
     finally
         LATeachingSuite._LAFigureSpecs[] = old_ge_la
     end
