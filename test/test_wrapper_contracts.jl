@@ -108,6 +108,33 @@ end
         LATeachingSuite._LAFigureSpecs[] = old_ge_la
     end
 
+    la_show_layout = _py_ns_lat()
+    _py_setattr_lat(la_show_layout, "ge_svg", (args...; kwargs...) -> begin
+        empty!(ge_seen)
+        merge!(ge_seen, Dict(kwargs))
+        "<svg>show-layout</svg>"
+    end)
+    try
+        LATeachingSuite._LAFigureSpecs[] = la_show_layout
+        pb = ShowGE{Rational{Int}}([1 2; 3 4], [5, 6])
+        ref!(pb)
+        svg = show_layout!(pb; fig_scale=1.1)
+        @test svg isa LATeachingSuite.SVGOut
+        @test !hasfield(typeof(pb), :pivot_list)
+        @test !hasfield(typeof(pb), :bg_for_entries)
+        @test !hasfield(typeof(pb), :ref_path_list)
+        @test hasfield(typeof(pb), :pivot_locs)
+        @test hasfield(typeof(pb), :decorations)
+        @test hasfield(typeof(pb), :rowechelon_paths)
+        @test ge_seen[:pivot_locs] !== nothing
+        @test ge_seen[:decorations] !== nothing
+        @test ge_seen[:rowechelon_paths] !== nothing
+        @test ge_seen[:variable_summary] !== nothing
+        @test ge_seen[:fig_scale] == 1.1
+    finally
+        LATeachingSuite._LAFigureSpecs[] = old_ge_la
+    end
+
     la = _py_ns_lat()
     ml = _py_ns_lat()
     py = LATeachingSuite.ensure_pythoncall!()

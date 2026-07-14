@@ -47,10 +47,10 @@ mutable struct ShowGE{T<:Number}
     pivot_cols
     free_cols
     desc
-    pivot_list
-    bg_for_entries
-    ref_path_list
-    basic_var
+    pivot_locs
+    decorations
+    rowechelon_paths
+    variable_summary
     rank
     h
     xp
@@ -208,7 +208,11 @@ function ref!( pb::ShowGE{T}; gj::Bool=false, normal_eq::Bool=false )  where T <
     pb.normal_eq = normal_eq
     pb.free_cols = filter(x -> !(x in pb.pivot_cols), 1:N)
 
-    pb.pivot_list, pb.bg_for_entries, pb.ref_path_list, pb.basic_var = decorate_ge(pb.desc,pb.pivot_cols,sz; pivot_color="yellow!40");
+    ge_dec = ge_decorations(pb.desc, pb.pivot_cols, sz; pivot_color="yellow!40")
+    pb.pivot_locs = ge_dec.pivot_locs
+    pb.decorations = ge_dec.decorations
+    pb.rowechelon_paths = ge_dec.rowechelon_paths
+    pb.variable_summary = ge_dec.variable_summary
     pb.rank = length( pb.pivot_cols )
     _compute_rhs_status!(pb)
     nothing
@@ -372,11 +376,11 @@ function show_layout!(  pb::ShowGE{T}; array_names=nothing, show_variables=true,
             svg = matrixlayout_ge(
                 pb.matrices;
                 n_rhs=rhs_groups,
-            pivot_list=pb.pivot_list,
-            bg_for_entries=pb.bg_for_entries,
-            ref_path_list=pb.ref_path_list,
-            variable_summary=show_variables ? pb.basic_var : nothing,
-            variable_colors=["red", "black"],
+                pivot_locs=pb.pivot_locs,
+                decorations=pb.decorations,
+                rowechelon_paths=pb.rowechelon_paths,
+                variable_summary=show_variables ? pb.variable_summary : nothing,
+                variable_colors=["red", "black"],
                 rhs_status=rhs_status,
                 array_names=array_names,
                 callouts=callouts,
@@ -394,11 +398,11 @@ function show_layout!(  pb::ShowGE{T}; array_names=nothing, show_variables=true,
             svg = matrixlayout_ge(
                 pb.matrices;
                 n_rhs=rhs_groups,
-            pivot_list=pb.pivot_list,
-            bg_for_entries=pb.bg_for_entries,
-            ref_path_list=pb.ref_path_list,
-            variable_summary=show_variables ? pb.basic_var : nothing,
-            variable_colors=["red", "black"],
+                pivot_locs=pb.pivot_locs,
+                decorations=pb.decorations,
+                rowechelon_paths=pb.rowechelon_paths,
+                variable_summary=show_variables ? pb.variable_summary : nothing,
+                variable_colors=["red", "black"],
                 rhs_status=rhs_status,
                 array_names=array_names,
                 fig_scale=fig_scale,
@@ -418,7 +422,7 @@ function show_layout!(  pb::ShowGE{T}; array_names=nothing, show_variables=true,
     pb.h = _pycall(ge_svg, pb.A, rhs;
         show_pivots=true,
         fig_scale=fig_scale,
-        variable_summary=show_variables ? pb.basic_var : nothing,
+        variable_summary=show_variables && isdefined(pb, :variable_summary) ? pb.variable_summary : nothing,
         variable_colors=["red", "black"],
         rhs_status=rhs_status_str,
         array_names=array_names,
@@ -815,7 +819,8 @@ end
 
 function _ge_pyify_payload(
     mats, pivot_list, bg_for_entries, ref_path_list, comment_list,
-    variable_summary, rhs_status, array_names, callouts, decorators, decorations
+    variable_summary, rhs_status, array_names, callouts, decorators, decorations,
+    pivot_locs, rowechelon_paths
 )
     return (
         mats=_ge_to_pylist(mats),
@@ -829,6 +834,8 @@ function _ge_pyify_payload(
         callouts=_ge_to_pylist(callouts),
         decorators=_ge_to_pylist(decorators),
         decorations=_ge_to_pylist(decorations),
+        pivot_locs=_ge_to_pylist(pivot_locs),
+        rowechelon_paths=_ge_to_pylist(rowechelon_paths),
     )
 end
 
@@ -836,7 +843,7 @@ function matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=noth
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"], pivot_text_color=nothing,
              ref_path_list=nothing, comment_list=[], variable_summary=nothing, array_names=nothing,
              start_index=1, func=nothing, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,
-             render_opts=nothing, rhs_status=nothing, kwargs... )
+             render_opts=nothing, rhs_status=nothing, pivot_locs=nothing, rowechelon_paths=nothing, kwargs... )
     mats = _prepare_ge_mats(matrices, formatter)
     # Preserve legacy GE background highlights so pivot-column shading stays on the
     # original `bg_for_entries -> codebefore` render path used by GenLAProblems.
@@ -850,7 +857,7 @@ function matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=noth
     payload = _ge_pyify_payload(
         mats, pivot_list, bg_for_entries, ref_path_list,
         comment_list, variable_summary, rhs_status, array_names,
-        callouts, decorators, decorations
+        callouts, decorators, decorations, pivot_locs, rowechelon_paths
     )
 
     _ensure_pythoncall()
@@ -866,10 +873,12 @@ function matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=noth
         n_rhs=nrhs_arg,
         formatter=py_str,
         pivot_list=payload.pivot_list,
+        pivot_locs=payload.pivot_locs,
         bg_for_entries=payload.bg_for_entries,
         variable_colors=variable_colors,
         pivot_text_color=pivot_text_color,
         ref_path_list=payload.ref_path_list,
+        rowechelon_paths=payload.rowechelon_paths,
         comment_list=payload.comment_list,
         variable_summary=payload.variable_summary,
         rhs_status=payload.rhs_status,
