@@ -554,11 +554,20 @@ end
 #  Xh = similar(pb.A, size(pb.A,1), A - pb.rank)
 #end
 # ==============================================================================================================
-raw"""function show_ge_final( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex, pivot_list=nothing, bg_for_entries=nothing, <br>
-             variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"],  <br>
-             ref_path_list=nothing, comment_list=[], variable_summary=nothing, array_names=nothing, <br>
-             start_index=1, func=nothing, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing )
- """
+raw"""
+    julia_ge(matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex,
+             variable_summary=nothing, array_names=nothing,
+             fig_scale=nothing, output_dir=nothing, output_stem=nothing,
+             render_opts=nothing)
+
+Render the final GE table from `matrices[end][end]` using the current
+`LAFigureSpecs.ge_svg` API.
+
+Prefer canonical GE rendering keywords such as `n_rhs`, `formatter`,
+`variable_summary`, `array_names`, `output_dir`, `output_stem`, and
+`render_opts`. The older `show_ge_final` name and the older decoration
+keywords are retained as compatibility inputs only.
+"""
 function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex, pivot_list=nothing, bg_for_entries=nothing,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"],
              ref_path_list=nothing, comment_list=[], variable_summary=nothing, array_names=nothing,
@@ -605,7 +614,7 @@ end
 """
     SVGOut(svg::String)
 
-Wrapper type for SVG output from `show_ge_final`, enabling rich display in IJulia.
+Wrapper type for SVG output from Julia rendering helpers, enabling rich display in IJulia.
 """
 struct SVGOut
     svg::String
@@ -624,7 +633,7 @@ end
 """
     show_ge_final(args...; kwargs...) -> SVGOut
 
-Render only the final GE table from `matrices[end][end]`.
+Compatibility alias for `julia_ge` that returns `SVGOut`.
 """
 show_ge_final(args...; kwargs...) = SVGOut(julia_ge(args...; kwargs...))
 
