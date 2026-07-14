@@ -747,7 +747,8 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=not
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"], pivot_text_color=nothing,
              ref_path_list=nothing, comment_list=[], variable_summary=nothing, array_names=nothing,
              start_index=1, func=nothing, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,
-             render_opts=nothing, rhs_status=nothing, pivot_locs=nothing, rowechelon_paths=nothing, kwargs... )
+             render_opts=nothing, rhs_status=nothing, pivot_locs=nothing, rowechelon_paths=nothing,
+             text_annotations=nothing, kwargs... )
     mats = _prepare_ge_mats(matrices, formatter)
     # Preserve legacy GE background highlights so pivot-column shading stays on the
     # original `bg_for_entries -> codebefore` render path used by GenLAProblems.
@@ -757,7 +758,6 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=not
     callouts = get(kwargs, :callouts, nothing)
     decorators = get(kwargs, :decorators, nothing)
     decorations = get(kwargs, :decorations, nothing)
-    text_annotations = get(kwargs, :text_annotations, nothing)
     # create_medium_nodes/create_extra_nodes are handled by LAFigureSpecs.ge_convenience
     payload = _ge_pyify_payload(
         mats, pivot_list, bg_for_entries, ref_path_list,
