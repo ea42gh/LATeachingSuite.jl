@@ -82,6 +82,19 @@ end
         @test svg isa LATeachingSuite.SVGOut
         @test ge_seen[:bg_for_entries] == bg_specs
         @test get(ge_seen, :decorators, nothing) === nothing
+
+        callouts = [Dict("grid" => (0, 1), "label" => "A", "side" => "right")]
+        decorations = [Dict("grid" => (0, 1), "rows" => (0, 0), "cols" => (0, 1), "background" => "yellow!35")]
+        svg = LATeachingSuite.ge_svg(
+            [[nothing, [1 0; 0 1]]];
+            callouts=callouts,
+            decorations=decorations,
+        )
+        @test svg isa LATeachingSuite.SVGOut
+        @test haskey(ge_seen, :callouts)
+        @test haskey(ge_seen, :decorations)
+        @test !haskey(ge_seen, :specs)
+        @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; specs=callouts)
     finally
         LATeachingSuite._LAFigureSpecs[] = old_ge_la
     end

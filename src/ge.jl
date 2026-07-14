@@ -811,7 +811,10 @@ function _call_ge_convenience(mats_py; kwargs...)
     return _pycall(ge_fn, mats_py; kwargs...)
 end
 
-function _ge_pyify_payload(mats, pivot_list, bg_for_entries, ref_path_list, comment_list, variable_summary, rhs_status, array_names, specs, decorators)
+function _ge_pyify_payload(
+    mats, pivot_list, bg_for_entries, ref_path_list, comment_list,
+    variable_summary, rhs_status, array_names, callouts, decorators, decorations
+)
     return (
         mats=_ge_to_pylist(mats),
         pivot_list=_ge_to_pylist(pivot_list),
@@ -821,8 +824,9 @@ function _ge_pyify_payload(mats, pivot_list, bg_for_entries, ref_path_list, comm
         variable_summary=_ge_to_pylist(variable_summary),
         rhs_status=_ge_to_pylist(rhs_status),
         array_names=_ge_to_pylist(array_names),
-        specs=_ge_to_pylist(specs),
+        callouts=_ge_to_pylist(callouts),
         decorators=_ge_to_pylist(decorators),
+        decorations=_ge_to_pylist(decorations),
     )
 end
 
@@ -834,12 +838,17 @@ function matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=noth
     mats = _prepare_ge_mats(matrices, formatter)
     # Preserve legacy GE background highlights so pivot-column shading stays on the
     # original `bg_for_entries -> codebefore` render path used by GenLAProblems.
+    if haskey(kwargs, :specs)
+        throw(ArgumentError("Removed GE matrix-label alias: specs. Use callouts instead."))
+    end
+    callouts = get(kwargs, :callouts, nothing)
     decorators = get(kwargs, :decorators, nothing)
+    decorations = get(kwargs, :decorations, nothing)
     # create_medium_nodes/create_extra_nodes are handled by LAFigureSpecs.ge_convenience
-    specs = get(kwargs, :specs, nothing)
     payload = _ge_pyify_payload(
         mats, pivot_list, bg_for_entries, ref_path_list,
-        comment_list, variable_summary, rhs_status, array_names, specs, decorators
+        comment_list, variable_summary, rhs_status, array_names,
+        callouts, decorators, decorations
     )
 
     _ensure_pythoncall()
@@ -863,8 +872,9 @@ function matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=noth
         variable_summary=payload.variable_summary,
         rhs_status=payload.rhs_status,
         array_names=payload.array_names,
-        specs=payload.specs,
+        callouts=payload.callouts,
         decorators=payload.decorators,
+        decorations=payload.decorations,
         start_index=start_index,
         func=func,
         fig_scale=fig_scale,
