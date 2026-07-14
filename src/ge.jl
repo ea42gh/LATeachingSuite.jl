@@ -233,28 +233,28 @@ function _format_rhs_label(rhs_labels::Vector{String})
     return rhs_labels[1]
 end
 
-function _normal_eq_name_specs(n_rows::Int, rhs_labels::Vector{String})
-    specs = Vector{Tuple{Tuple{Int,Int},String,String}}()
+function _normal_eq_callouts(n_rows::Int, rhs_labels::Vector{String})
+    callouts = Vector{Dict{String,Any}}()
     if n_rows <= 0
-        return specs
+        return callouts
     end
     rhs0 = _format_rhs_label(rhs_labels)
-    push!(specs, ((0, 1), "ar", "\$\\mathbf{ $(rhs0) }\$"))
+    push!(callouts, Dict("grid" => (0, 1), "side" => "right", "label" => "\$\\mathbf{ $(rhs0) }\$", "color" => "blue"))
     if n_rows <= 1
-        return specs
+        return callouts
     end
     rhs1_labels = ["A^T " * lbl for lbl in rhs_labels]
     rhs1 = _format_rhs_label(rhs1_labels)
-    push!(specs, ((1, 0), "al", "\$\\mathbf{ A^T }\$"))
-    push!(specs, ((1, 1), "ar", "\$\\mathbf{ $(rhs1) }\$"))
+    push!(callouts, Dict("grid" => (1, 0), "side" => "left", "label" => "\$\\mathbf{ A^T }\$", "color" => "blue"))
+    push!(callouts, Dict("grid" => (1, 1), "side" => "right", "label" => "\$\\mathbf{ $(rhs1) }\$", "color" => "blue"))
     for i in 2:(n_rows - 1)
         prod = join(["E_$(k)" for k in (i - 1):-1:1], " ")
         rhs_i_labels = [prod == "" ? lbl : "$(prod) $(lbl)" for lbl in rhs1_labels]
         rhs_i = _format_rhs_label(rhs_i_labels)
-        push!(specs, ((i, 0), "al", "\$\\mathbf{ E_$(i - 1) }\$"))
-        push!(specs, ((i, 1), "ar", "\$\\mathbf{ $(rhs_i) }\$"))
+        push!(callouts, Dict("grid" => (i, 0), "side" => "left", "label" => "\$\\mathbf{ E_$(i - 1) }\$", "color" => "blue"))
+        push!(callouts, Dict("grid" => (i, 1), "side" => "right", "label" => "\$\\mathbf{ $(rhs_i) }\$", "color" => "blue"))
     end
-    return specs
+    return callouts
 end
 
 function _inconsistent_rhs_value(pb::ShowGE{T}, global_b_col::Int) where T <: Number
@@ -355,6 +355,7 @@ function show_layout!(  pb::ShowGE{T}; array_names=nothing, show_variables=true,
         end
     end
     if pb.normal_eq
+        callouts = nothing
         if !(array_names isa AbstractDict)
             rhs_labels = String[]
             try
@@ -363,8 +364,8 @@ function show_layout!(  pb::ShowGE{T}; array_names=nothing, show_variables=true,
             catch
                 rhs_labels = ["A"]
             end
-            name_specs = _normal_eq_name_specs(length(pb.matrices), rhs_labels)
-            array_names = Dict("name_specs" => name_specs)
+            callouts = _normal_eq_callouts(length(pb.matrices), rhs_labels)
+            array_names = nothing
         end
             rhs_status = isdefined(pb, :rhs_status) ? [string(s) for s in pb.rhs_status] : nothing
             resolved_output_dir, resolved_output_stem = _resolve_ge_output_targets(pb, output_dir, output_stem)
@@ -378,6 +379,7 @@ function show_layout!(  pb::ShowGE{T}; array_names=nothing, show_variables=true,
             variable_colors=["red", "black"],
                 rhs_status=rhs_status,
                 array_names=array_names,
+                callouts=callouts,
                 fig_scale=fig_scale,
                 output_dir=resolved_output_dir,
                 output_stem=resolved_output_stem,

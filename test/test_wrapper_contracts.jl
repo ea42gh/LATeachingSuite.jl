@@ -58,6 +58,15 @@ end
     @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.rhs_matrix))
     @test any(m -> m.module === LATeachingSuite, methods(LATeachingSuite.rhs_column))
 
+    normal_eq_callouts = LATeachingSuite._normal_eq_callouts(3, ["b"])
+    @test length(normal_eq_callouts) == 5
+    @test normal_eq_callouts[1]["grid"] == (0, 1)
+    @test normal_eq_callouts[1]["side"] == "right"
+    @test normal_eq_callouts[2]["grid"] == (1, 0)
+    @test normal_eq_callouts[2]["side"] == "left"
+    @test all(haskey(c, "label") for c in normal_eq_callouts)
+    @test all(!haskey(c, "name_specs") for c in normal_eq_callouts)
+
     la_ge = _py_ns_lat()
     _py_setattr_lat(la_ge, "ge_svg", (args...; kwargs...) -> "<svg>ge</svg>")
     old_ge_la = LATeachingSuite._LAFigureSpecs[]
