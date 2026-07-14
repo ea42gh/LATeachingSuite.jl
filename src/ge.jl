@@ -721,7 +721,7 @@ function _call_ge_convenience(mats_py; kwargs...)
 end
 
 function _ge_pyify_payload(
-    mats, pivot_list, bg_for_entries, ref_path_list, comment_list,
+    mats, pivot_list, bg_for_entries, ref_path_list, comment_list, text_annotations,
     variable_summary, rhs_status, array_names, callouts, decorators, decorations,
     pivot_locs, rowechelon_paths
 )
@@ -731,6 +731,7 @@ function _ge_pyify_payload(
         bg_for_entries=_ge_to_pylist(bg_for_entries),
         ref_path_list=_ge_to_pylist(ref_path_list),
         comment_list=_ge_to_pylist(comment_list),
+        text_annotations=_ge_to_pylist(text_annotations),
         variable_summary=_ge_to_pylist(variable_summary),
         rhs_status=_ge_to_pylist(rhs_status),
         array_names=_ge_to_pylist(array_names),
@@ -756,10 +757,11 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=not
     callouts = get(kwargs, :callouts, nothing)
     decorators = get(kwargs, :decorators, nothing)
     decorations = get(kwargs, :decorations, nothing)
+    text_annotations = get(kwargs, :text_annotations, nothing)
     # create_medium_nodes/create_extra_nodes are handled by LAFigureSpecs.ge_convenience
     payload = _ge_pyify_payload(
         mats, pivot_list, bg_for_entries, ref_path_list,
-        comment_list, variable_summary, rhs_status, array_names,
+        comment_list, text_annotations, variable_summary, rhs_status, array_names,
         callouts, decorators, decorations, pivot_locs, rowechelon_paths
     )
 
@@ -783,6 +785,7 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=not
         ref_path_list=payload.ref_path_list,
         rowechelon_paths=payload.rowechelon_paths,
         comment_list=payload.comment_list,
+        text_annotations=payload.text_annotations,
         variable_summary=payload.variable_summary,
         rhs_status=payload.rhs_status,
         array_names=payload.array_names,

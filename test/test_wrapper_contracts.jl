@@ -96,14 +96,17 @@ end
 
         callouts = [Dict("grid" => (0, 1), "label" => "A", "side" => "right")]
         decorations = [Dict("grid" => (0, 1), "rows" => (0, 0), "cols" => (0, 1), "background" => "yellow!35")]
+        text_annotations = [Dict("grid_row" => 0, "text" => "\\qquad note")]
         svg = LATeachingSuite.ge_svg(
             [[nothing, [1 0; 0 1]]];
             callouts=callouts,
             decorations=decorations,
+            text_annotations=text_annotations,
         )
         @test svg isa LATeachingSuite.SVGOut
         @test haskey(ge_seen, :callouts)
         @test haskey(ge_seen, :decorations)
+        @test haskey(ge_seen, :text_annotations)
         @test !haskey(ge_seen, :specs)
         @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; specs=callouts)
     finally
