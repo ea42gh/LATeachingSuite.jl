@@ -566,7 +566,8 @@ Render the final GE table from `matrices[end][end]` using the current
 Prefer canonical GE rendering keywords such as `n_rhs`, `formatter`,
 `variable_summary`, `array_names`, `output_dir`, `output_stem`, and
 `render_opts`. The older `show_ge_final` name and the older decoration
-keywords are retained as compatibility inputs only.
+keywords (`pivot_list`, `bg_for_entries`, `ref_path_list`, `comment_list`) are
+compatibility-only migration inputs; do not use them in new notebook cells.
 """
 function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex, pivot_list=nothing, bg_for_entries=nothing,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"],
@@ -633,7 +634,7 @@ end
 """
     show_ge_final(args...; kwargs...) -> SVGOut
 
-Compatibility alias for `julia_ge` that returns `SVGOut`.
+Compatibility-only alias for `julia_ge` that returns `SVGOut`.
 """
 show_ge_final(args...; kwargs...) = SVGOut(julia_ge(args...; kwargs...))
 
@@ -759,8 +760,9 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=not
              render_opts=nothing, rhs_status=nothing, pivot_locs=nothing, rowechelon_paths=nothing,
              text_annotations=nothing, kwargs... )
     mats = _prepare_ge_mats(matrices, formatter)
-    # Preserve legacy GE background highlights so pivot-column shading stays on the
-    # original `bg_for_entries -> codebefore` render path used by GenLAProblems.
+    # Compatibility inputs are forwarded only at this wrapper boundary. New
+    # callers should pass pivot_locs, rowechelon_paths, text_annotations, and
+    # decorations directly.
     if haskey(kwargs, :specs)
         throw(ArgumentError("Removed GE matrix-label alias: specs. Use callouts instead."))
     end
