@@ -766,6 +766,9 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=not
     if haskey(kwargs, :specs)
         throw(ArgumentError("Removed GE matrix-label alias: specs. Use callouts instead."))
     end
+    if func !== nothing
+        throw(ArgumentError("Removed GE mutation hook: func. Use decorators, decorations, callouts, text_annotations, or rowechelon_paths instead."))
+    end
     callouts = get(kwargs, :callouts, nothing)
     decorators = get(kwargs, :decorators, nothing)
     decorations = get(kwargs, :decorations, nothing)
@@ -804,7 +807,6 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=not
         decorators=payload.decorators,
         decorations=payload.decorations,
         start_index=start_index,
-        func=func,
         fig_scale=fig_scale,
         output_dir=resolved_output_dir,
         output_stem=output_stem,
