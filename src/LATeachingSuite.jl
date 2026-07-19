@@ -287,6 +287,7 @@ end
 
 function _bundle_wrapper(bundle_sym::Symbol)
     return function (args...; kwargs...)
+        haskey(kwargs, :tmp_dir) && throw(ArgumentError("Removed artifact keyword: tmp_dir. Use output_dir instead."))
         la = load_LAFigureSpecs()
         bundle_fn = _pygetattr(la, bundle_sym)
         spec, svg, render_error = _bundle_result(_pycall(bundle_fn, args...; kwargs...))
@@ -324,7 +325,6 @@ function _split_qr_figure_kwargs(kwargs)
         :exact_bbox,
         :output_dir,
         :output_stem,
-        :tmp_dir,
         :render_opts,
         :strict,
     ])
@@ -332,6 +332,7 @@ function _split_qr_figure_kwargs(kwargs)
     spec_kw = Dict{Symbol,Any}()
     render_kw = Dict{Symbol,Any}()
     for (k, v) in kwargs
+        k === :tmp_dir && throw(ArgumentError("Removed artifact keyword: tmp_dir. Use output_dir instead."))
         if k === :strict
             spec_kw[k] = v
             render_kw[k] = v
@@ -345,10 +346,6 @@ function _split_qr_figure_kwargs(kwargs)
             spec_kw[k] = v
         end
     end
-    if haskey(render_kw, :tmp_dir) && !haskey(render_kw, :output_dir)
-        render_kw[:output_dir] = render_kw[:tmp_dir]
-    end
-    pop!(render_kw, :tmp_dir, nothing)
     pop!(render_kw, :keep_file, nothing)
     return matrices_kw, spec_kw, render_kw
 end

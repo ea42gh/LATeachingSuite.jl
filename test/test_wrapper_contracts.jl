@@ -121,6 +121,7 @@ end
         @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; bg_for_entries=[])
         @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; ref_path_list=[])
         @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; comment_list=[])
+        @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; tmp_dir="/tmp/old")
     finally
         LATeachingSuite._LAFigureSpecs[] = old_ge_la
     end
@@ -393,6 +394,7 @@ end
             py = LATeachingSuite.ensure_pythoncall!()
             @test Base.invokelatest(py.pyconvert, String, spec["kind"]) == String(kind)
             @test Base.invokelatest(py.pyconvert, Int, spec["argc"]) == 1
+            @test_throws ArgumentError fn([1 0; 0 1]; tmp_dir="/tmp/old")
         end
     finally
         LATeachingSuite._LAFigureSpecs[] = old_la

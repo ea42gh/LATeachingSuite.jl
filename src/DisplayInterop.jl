@@ -97,34 +97,19 @@ function l_show_svd(A, U, Σ, Vt, rankA)
     return nothing
 end
 
-function _clean_tmp_kwargs(kwargs)
+function _clean_render_kwargs(kwargs)
     clean = Dict(kwargs)
-    pop!(clean, :tmp_dir, nothing)
     pop!(clean, :keep_file, nothing)
     pop!(clean, :output_dir, nothing)
     return clean
 end
 
-function _map_tmp_to_output(kwargs)
-    clean = Dict(kwargs)
-    if haskey(clean, :tmp_dir) && !haskey(clean, :output_dir)
-        clean[:output_dir] = clean[:tmp_dir]
-    end
-    pop!(clean, :tmp_dir, nothing)
-    pop!(clean, :keep_file, nothing)
-    return clean
-end
-
-function _normalize_render_opts(render_opts; tmp_dir=nothing)
-    opts = if render_opts === nothing
-        Dict{String,Any}()
+function _normalize_render_opts(render_opts)
+    if render_opts === nothing
+        return Dict{String,Any}()
     elseif !(render_opts isa AbstractDict)
-        Dict{String,Any}(render_opts)
+        return Dict{String,Any}(render_opts)
     else
-        Dict{String,Any}(render_opts)
+        return Dict{String,Any}(render_opts)
     end
-    if tmp_dir !== nothing && !haskey(opts, "output_dir")
-        opts["output_dir"] = tmp_dir
-    end
-    return opts
 end

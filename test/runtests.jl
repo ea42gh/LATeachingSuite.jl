@@ -122,6 +122,8 @@ using LinearAlgebra
     A = Rational{Int}.([1 2; 3 4])
     B1 = Rational{Int}.([5 7; 6 8])
     B2 = Rational{Int}.([9; 10])
+    @test_throws MethodError ShowGE(A; tmp_dir="/tmp/old")
+    @test_throws MethodError ShowGE(A, B2; tmp_dir="/tmp/old")
     pb = ShowGE(A, (B1, B2))
     ref!(pb; gj=true)
     xp, xh = solutions(pb)

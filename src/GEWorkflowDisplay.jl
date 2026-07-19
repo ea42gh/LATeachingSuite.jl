@@ -17,9 +17,7 @@ function _system_matrix_rhs(pb::ShowGE{T}; b_mat=1, b_col=1) where T <: Number
     return A, b
 end
 
-_resolve_output_dir(output_dir, tmp_dir, fallback=nothing) = output_dir !== nothing ? output_dir : (tmp_dir !== nothing ? tmp_dir : fallback)
-
-function show_system(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, output_dir=nothing, tmp_dir=nothing, render_opts=nothing) where T <: Number
+function show_system(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, output_dir=nothing, render_opts=nothing) where T <: Number
     A, b = _system_matrix_rhs(pb; b_mat=b_mat, b_col=b_col)
     la = load_LAFigureSpecs()
     linear_system_tex = _pygetattr(la, :linear_system_tex)
@@ -28,7 +26,7 @@ function show_system(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fi
     tex = Base.invokelatest(py.pyconvert, String, tex)
     bs = load_matrixlayout()
     backsubst_svg = _pygetattr(bs, :backsubst_svg)
-    resolved_output_dir = _resolve_output_dir(output_dir, tmp_dir, pb.tmp_dir)
+    resolved_output_dir = output_dir !== nothing ? output_dir : pb.tmp_dir
     svg = _pycall(backsubst_svg; system_txt=tex, show_system=true,
                   show_cascade=false, show_solution=false,
                   fig_scale=fig_scale, output_dir=resolved_output_dir,
@@ -222,7 +220,7 @@ function _render_backsubst_svg(lines; fig_scale=nothing, output_dir=nothing, ren
     ml = load_matrixlayout()
     backsubst_svg = _pygetattr(ml, :backsubst_svg)
     kwargs = Dict{Symbol, Any}()
-    render_opts = _normalize_render_opts(render_opts; tmp_dir=output_dir)
+    render_opts = _normalize_render_opts(render_opts)
     kwargs[:cascade_txt] = _ge_to_pylist(lines)
     kwargs[:show_system] = false
     kwargs[:show_cascade] = true
@@ -241,7 +239,7 @@ function _render_solution_svg(solution_tex; fig_scale=nothing, output_dir=nothin
     ml = load_matrixlayout()
     backsubst_svg = _pygetattr(ml, :backsubst_svg)
     kwargs = Dict{Symbol, Any}()
-    render_opts = _normalize_render_opts(render_opts; tmp_dir=output_dir)
+    render_opts = _normalize_render_opts(render_opts)
     kwargs[:solution_txt] = solution_tex
     kwargs[:show_system] = false
     kwargs[:show_cascade] = false
@@ -312,32 +310,32 @@ function show_solution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x",
 end
 # ==============================================================================================================
 raw"""
-    show_backsubstitution(A, b; var_name="x", fig_scale=1, output_dir=nothing, tmp_dir="/tmp/la/run", render_svg=true)
+    show_backsubstitution(A, b; var_name="x", fig_scale=1, output_dir="/tmp/la/run", render_svg=true)
 
     Render the back-substitution cascade for the upper-triangular system `A * x = b`
     using `LAFigureSpecs.backsubstitution_tex`. Works with Integer/Float as well as
     exact `Rational` and `Complex{Rational}` inputs (those are converted to tuples so
     SymPy reconstructs exact rationals on the Python side).
 """
-function show_backsubstitution(A, b; var_name::String="x", fig_scale=1, output_dir=nothing, tmp_dir="/tmp/la/run", render_svg=true, render_opts=nothing)
+function show_backsubstitution(A, b; var_name::String="x", fig_scale=1, output_dir="/tmp/la/run", render_svg=true, render_opts=nothing)
     A2 = _python_exact_literal_if_needed(A)
     b2 = _python_exact_literal_if_needed(b)
     lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
     if render_svg
-        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=_resolve_output_dir(output_dir, tmp_dir), render_opts=render_opts)
+        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=output_dir, render_opts=render_opts)
     end
     return _display_cascade(lines)
 end
 # --------------------------------------------------------------------------------------------------------------
 raw"""
-    show_forwardsubstitution(A, b; var_name="x", fig_scale=1, output_dir=nothing, tmp_dir="/tmp/la/run", render_svg=true)
+    show_forwardsubstitution(A, b; var_name="x", fig_scale=1, output_dir="/tmp/la/run", render_svg=true)
 
 Render the forward-substitution cascade for the lower-triangular system `A * x = b`
 using the LAFigureSpecs backsubstitution cascade on a reversed system, then relabeling indices.
 Supports Integer/Float as well as exact `Rational` and `Complex{Rational}` inputs
 converted to tuples for exact SymPy reconstruction.
 """
-function show_forwardsubstitution(A, b; var_name::String="x", fig_scale=1, output_dir=nothing, tmp_dir="/tmp/la/run", render_svg=true, render_opts=nothing)
+function show_forwardsubstitution(A, b; var_name::String="x", fig_scale=1, output_dir="/tmp/la/run", render_svg=true, render_opts=nothing)
     Arev = A[end:-1:1, end:-1:1]
     brev = b[end:-1:1]
     A2 = _python_exact_literal_if_needed(Arev)
@@ -345,7 +343,7 @@ function show_forwardsubstitution(A, b; var_name::String="x", fig_scale=1, outpu
     lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
     lines = _relabel_cascade(lines, size(A, 1); var_name=var_name)
     if render_svg
-        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=_resolve_output_dir(output_dir, tmp_dir), render_opts=render_opts)
+        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=output_dir, render_opts=render_opts)
     end
     return _display_cascade(lines)
 end

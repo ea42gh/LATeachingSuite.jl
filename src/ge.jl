@@ -22,7 +22,6 @@ end
 # ==============================================================================================================
 
 raw"""pb = ShowGE{T}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{T}(A::AbstractMatrix{T}; tmp_dir="/tmp/la/run", output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
   <br>pb = ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
   <br>pb = ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
   <br>pb = ShowGE{T}(A::AbstractMatrix{T}, (B1, B2, ...); output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
@@ -59,73 +58,73 @@ mutable struct ShowGE{T<:Number}
     rhs_status
     rhs_consistent
 
-    function ShowGE(A::AbstractMatrix; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout")
-        ShowGE{eltype(A)}(A; tmp_dir=tmp_dir, output_dir=output_dir, keep_file=keep_file)
+    function ShowGE(A::AbstractMatrix; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout")
+        ShowGE{eltype(A)}(A; output_dir=output_dir, keep_file=keep_file)
     end
-    function ShowGE(A::AbstractMatrix, b; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout")
-        ShowGE{eltype(A)}(A, b; tmp_dir=tmp_dir, output_dir=output_dir, keep_file=keep_file)
+    function ShowGE(A::AbstractMatrix, b; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout")
+        ShowGE{eltype(A)}(A, b; output_dir=output_dir, keep_file=keep_file)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, A, nothing, Int[], false)
+    function ShowGE{T}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+        new(output_dir, keep_file, A, nothing, Int[], false)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         Bm = reshape(B, :, 1)
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, A, (Bm,), [1], false)
+        new(output_dir, keep_file, A, (Bm,), [1], false)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, A, (B,), [size(B, 2)], false)
+    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+        new(output_dir, keep_file, A, (B,), [size(B, 2)], false)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}, Bs::Tuple; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{T}(A::AbstractMatrix{T}, Bs::Tuple; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         blocks = _normalize_rhs_blocks(Bs)
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, A, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, keep_file, A, blocks, _rhs_group_sizes(blocks), false)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}, Bs::AbstractVector{<:AbstractMatrix{T}}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{T}(A::AbstractMatrix{T}, Bs::AbstractVector{<:AbstractMatrix{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         blocks = _normalize_rhs_blocks(Bs)
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, A, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, keep_file, A, blocks, _rhs_group_sizes(blocks), false)
     end
 
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, Rational{T}.(A), nothing, Int[], false)
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+        new(output_dir, keep_file, Rational{T}.(A), nothing, Int[], false)
     end
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractVector{T}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         Bm = Rational{T}.(reshape(B, :, 1))
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, Rational{T}.(A), (Bm,), [1], false)
+        new(output_dir, keep_file, Rational{T}.(A), (Bm,), [1], false)
     end
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         Bm = Rational{T}.(B)
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, Rational{T}.(A), (Bm,), [size(Bm, 2)], false)
+        new(output_dir, keep_file, Rational{T}.(A), (Bm,), [size(Bm, 2)], false)
     end
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, Bs::Tuple; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, Bs::Tuple; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         A2 = Rational{T}.(A)
         blocks = _normalize_rhs_blocks(map(B -> Rational{T}.(B), Bs))
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
     end
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, Bs::AbstractVector{<:AbstractMatrix{T}}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, Bs::AbstractVector{<:AbstractMatrix{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         A2 = Rational{T}.(A)
         blocks = _normalize_rhs_blocks(map(B -> Rational{T}.(B), Bs))
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
     end
 
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, Complex{Rational{T}}.(A), nothing, Int[], false)
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+        new(output_dir, keep_file, Complex{Rational{T}}.(A), nothing, Int[], false)
     end
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractVector{Complex{T}}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractVector{Complex{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         Bm = Complex{Rational{T}}.(reshape(B, :, 1))
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, Complex{Rational{T}}.(A), (Bm,), [1], false)
+        new(output_dir, keep_file, Complex{Rational{T}}.(A), (Bm,), [1], false)
     end
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         Bm = Complex{Rational{T}}.(B)
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, Complex{Rational{T}}.(A), (Bm,), [size(Bm, 2)], false)
+        new(output_dir, keep_file, Complex{Rational{T}}.(A), (Bm,), [size(Bm, 2)], false)
     end
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, Bs::Tuple; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, Bs::Tuple; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         A2 = Complex{Rational{T}}.(A)
         blocks = _normalize_rhs_blocks(map(B -> Complex{Rational{T}}.(B), Bs))
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
     end
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, Bs::AbstractVector{<:AbstractMatrix{Complex{T}}}; tmp_dir="/tmp/la/run", output_dir=nothing, keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, Bs::AbstractVector{<:AbstractMatrix{Complex{T}}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
         A2 = Complex{Rational{T}}.(A)
         blocks = _normalize_rhs_blocks(map(B -> Complex{Rational{T}}.(B), Bs))
-        new(_resolve_output_dir(output_dir, tmp_dir), keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
     end
 end
 
@@ -571,7 +570,7 @@ Prefer canonical GE rendering keywords such as `n_rhs`, `formatter`,
 function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"],
              variable_summary=nothing, array_names=nothing,
-             start_index=1, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,
+             start_index=1, fig_scale=nothing, output_dir=nothing, output_stem=nothing,
              render_opts=nothing )
     Ab = matrices[end][end]
     nrhs = n_rhs isa AbstractArray ? sum(n_rhs) : n_rhs
@@ -585,13 +584,10 @@ function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex,
     la = load_LAFigureSpecs()
     ge_svg = _pygetattr(la, :ge_svg)
     local_render_opts = render_opts === nothing ? Dict{String, Any}() : Dict{String, Any}(render_opts)
-    resolved_output_dir = output_dir !== nothing ? output_dir : tmp_dir
     resolved_output_stem = output_stem
     if !haskey(local_render_opts, "output_dir") && !haskey(local_render_opts, :output_dir)
         if output_dir !== nothing
-            local_render_opts["output_dir"] = resolved_output_dir
-        elseif tmp_dir !== nothing
-            local_render_opts["output_dir"] = mktempdir(resolved_output_dir)
+            local_render_opts["output_dir"] = output_dir
         end
     end
     call_kwargs = Dict{Symbol, Any}(
@@ -602,7 +598,7 @@ function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex,
         :render_opts => local_render_opts,
     )
     if output_dir !== nothing
-        call_kwargs[:output_dir] = resolved_output_dir
+        call_kwargs[:output_dir] = output_dir
     end
     if resolved_output_stem !== nothing
         call_kwargs[:output_stem] = resolved_output_stem
@@ -743,7 +739,7 @@ end
 function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"], pivot_text_color=nothing,
              variable_summary=nothing, array_names=nothing,
-             start_index=1, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,
+             start_index=1, fig_scale=nothing, output_dir=nothing, output_stem=nothing,
              render_opts=nothing, rhs_status=nothing, pivot_locs=nothing, rowechelon_paths=nothing,
              text_annotations=nothing, kwargs... )
     mats = _prepare_ge_mats(matrices, formatter)
@@ -753,6 +749,7 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex,
     if haskey(kwargs, :func)
         throw(ArgumentError("Removed GE mutation hook: func. Use decorators, decorations, callouts, text_annotations, or rowechelon_paths instead."))
     end
+    haskey(kwargs, :tmp_dir) && throw(ArgumentError("Removed artifact keyword: tmp_dir. Use output_dir instead."))
     for old_kw in (:pivot_list, :bg_for_entries, :ref_path_list, :comment_list)
         if haskey(kwargs, old_kw)
             throw(ArgumentError("Removed GE decoration keyword: $(old_kw). Use pivot_locs, decorations, rowechelon_paths, or text_annotations instead."))
@@ -774,7 +771,6 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex,
     if pivot_text_color === nothing
         pivot_text_color = pivot_colors[1]
     end
-    resolved_output_dir = output_dir !== nothing ? output_dir : tmp_dir
     svg = _call_ge_convenience(
         payload.mats;
         n_rhs=nrhs_arg,
@@ -792,7 +788,7 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex,
         decorations=payload.decorations,
         start_index=start_index,
         fig_scale=fig_scale,
-        output_dir=resolved_output_dir,
+        output_dir=output_dir,
         output_stem=output_stem,
         render_opts=render_opts,
     )
@@ -802,11 +798,11 @@ end
 
 # ------------------------------------------------------------------------------------------
 """
-    show_solution(matrices; var_name="x", fig_scale=1, output_dir=nothing, tmp_dir=nothing, render_svg=true)
+    show_solution(matrices; var_name="x", fig_scale=1, output_dir=nothing, render_svg=true)
 
 Render the standard solution form from the final augmented matrix.
 """
-function show_solution( matrices; var_name::String="x", fig_scale=1, output_dir=nothing, tmp_dir=nothing, render_svg=true, render_opts=nothing )
+function show_solution( matrices; var_name::String="x", fig_scale=1, output_dir=nothing, render_svg=true, render_opts=nothing )
     Ab = matrices[end][end]
     A = Ab[:, 1:(size(Ab, 2) - 1)]
     b = Ab[:, end]
@@ -814,7 +810,7 @@ function show_solution( matrices; var_name::String="x", fig_scale=1, output_dir=
     b = _python_exact_literal_if_needed(b)
     tex = load_LAFigureSpecs().standard_solution_tex(A, b, var_name=var_name)
     if render_svg
-        return _render_solution_svg(tex; fig_scale=fig_scale, output_dir=_resolve_output_dir(output_dir, tmp_dir), render_opts=render_opts)
+        return _render_solution_svg(tex; fig_scale=fig_scale, output_dir=output_dir, render_opts=render_opts)
     end
     return _display_tex(tex)
 end
