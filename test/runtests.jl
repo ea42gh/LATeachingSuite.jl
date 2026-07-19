@@ -86,6 +86,7 @@ using LinearAlgebra
     @test isdefined(LATeachingSuite, :eig_bundle)
     @test isdefined(LATeachingSuite, :svd_bundle)
     @test isdefined(LATeachingSuite, :ge_decorations)
+    @test !(:decorate_ge in names(LATeachingSuite))
     @test !isdefined(LATeachingSuite, :show_ge_final)
     @test !isdefined(LATeachingSuite.WorkflowDisplay, :show_ge_final)
     @test isdefined(LATeachingSuite.WorkflowDisplay, :show_layout!)
