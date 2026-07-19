@@ -572,7 +572,7 @@ compatibility-only migration inputs; do not use them in new notebook cells.
 function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex, pivot_list=nothing, bg_for_entries=nothing,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"],
              ref_path_list=nothing, comment_list=[], variable_summary=nothing, array_names=nothing,
-             start_index=1, func=nothing, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,
+             start_index=1, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,
              render_opts=nothing )
     Ab = matrices[end][end]
     nrhs = n_rhs isa AbstractArray ? sum(n_rhs) : n_rhs
@@ -756,7 +756,7 @@ end
 function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=nothing, bg_for_entries=nothing,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"], pivot_text_color=nothing,
              ref_path_list=nothing, comment_list=[], variable_summary=nothing, array_names=nothing,
-             start_index=1, func=nothing, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,
+             start_index=1, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,
              render_opts=nothing, rhs_status=nothing, pivot_locs=nothing, rowechelon_paths=nothing,
              text_annotations=nothing, kwargs... )
     mats = _prepare_ge_mats(matrices, formatter)
@@ -766,7 +766,7 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=not
     if haskey(kwargs, :specs)
         throw(ArgumentError("Removed GE matrix-label alias: specs. Use callouts instead."))
     end
-    if func !== nothing
+    if haskey(kwargs, :func)
         throw(ArgumentError("Removed GE mutation hook: func. Use decorators, decorations, callouts, text_annotations, or rowechelon_paths instead."))
     end
     callouts = get(kwargs, :callouts, nothing)

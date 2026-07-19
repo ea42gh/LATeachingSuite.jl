@@ -115,6 +115,7 @@ end
         @test ge_seen[:rowechelon_paths] == rowechelon_paths
         @test !haskey(ge_seen, :specs)
         @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; specs=callouts)
+        @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; func=identity)
     finally
         LATeachingSuite._LAFigureSpecs[] = old_ge_la
     end
