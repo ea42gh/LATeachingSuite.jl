@@ -565,13 +565,12 @@ Render the final GE table from `matrices[end][end]` using the current
 
 Prefer canonical GE rendering keywords such as `n_rhs`, `formatter`,
 `variable_summary`, `array_names`, `output_dir`, `output_stem`, and
-`render_opts`. The older decoration keywords (`pivot_list`, `bg_for_entries`,
-`ref_path_list`, `comment_list`) are compatibility-only migration inputs; do not
-use them in new notebook cells.
+`render_opts`. Use `ge_decorations(...)` to derive `pivot_locs`,
+`decorations`, `rowechelon_paths`, and `variable_summary` from a GE trace.
 """
-function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex, pivot_list=nothing, bg_for_entries=nothing,
+function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"],
-             ref_path_list=nothing, comment_list=[], variable_summary=nothing, array_names=nothing,
+             variable_summary=nothing, array_names=nothing,
              start_index=1, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,
              render_opts=nothing )
     Ab = matrices[end][end]
@@ -724,16 +723,11 @@ function _call_ge_convenience(mats_py; kwargs...)
 end
 
 function _ge_pyify_payload(
-    mats, pivot_list, bg_for_entries, ref_path_list, comment_list, text_annotations,
-    variable_summary, rhs_status, array_names, callouts, decorators, decorations,
-    pivot_locs, rowechelon_paths
+    mats, text_annotations, variable_summary, rhs_status, array_names, callouts,
+    decorators, decorations, pivot_locs, rowechelon_paths
 )
     return (
         mats=_ge_to_pylist(mats),
-        pivot_list=_ge_to_pylist(pivot_list),
-        bg_for_entries=_ge_to_pylist(bg_for_entries),
-        ref_path_list=_ge_to_pylist(ref_path_list),
-        comment_list=_ge_to_pylist(comment_list),
         text_annotations=_ge_to_pylist(text_annotations),
         variable_summary=_ge_to_pylist(variable_summary),
         rhs_status=_ge_to_pylist(rhs_status),
@@ -746,29 +740,30 @@ function _ge_pyify_payload(
     )
 end
 
-function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=nothing, bg_for_entries=nothing,
+function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"], pivot_text_color=nothing,
-             ref_path_list=nothing, comment_list=[], variable_summary=nothing, array_names=nothing,
+             variable_summary=nothing, array_names=nothing,
              start_index=1, fig_scale=nothing, output_dir=nothing, output_stem=nothing, tmp_dir=nothing,
              render_opts=nothing, rhs_status=nothing, pivot_locs=nothing, rowechelon_paths=nothing,
              text_annotations=nothing, kwargs... )
     mats = _prepare_ge_mats(matrices, formatter)
-    # Compatibility inputs are forwarded only at this wrapper boundary. New
-    # callers should pass pivot_locs, rowechelon_paths, text_annotations, and
-    # decorations directly.
     if haskey(kwargs, :specs)
         throw(ArgumentError("Removed GE matrix-label alias: specs. Use callouts instead."))
     end
     if haskey(kwargs, :func)
         throw(ArgumentError("Removed GE mutation hook: func. Use decorators, decorations, callouts, text_annotations, or rowechelon_paths instead."))
     end
+    for old_kw in (:pivot_list, :bg_for_entries, :ref_path_list, :comment_list)
+        if haskey(kwargs, old_kw)
+            throw(ArgumentError("Removed GE decoration keyword: $(old_kw). Use pivot_locs, decorations, rowechelon_paths, or text_annotations instead."))
+        end
+    end
     callouts = get(kwargs, :callouts, nothing)
     decorators = get(kwargs, :decorators, nothing)
     decorations = get(kwargs, :decorations, nothing)
     # create_medium_nodes/create_extra_nodes are handled by LAFigureSpecs.ge_convenience
     payload = _ge_pyify_payload(
-        mats, pivot_list, bg_for_entries, ref_path_list,
-        comment_list, text_annotations, variable_summary, rhs_status, array_names,
+        mats, text_annotations, variable_summary, rhs_status, array_names,
         callouts, decorators, decorations, pivot_locs, rowechelon_paths
     )
 
@@ -784,14 +779,10 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex, pivot_list=not
         payload.mats;
         n_rhs=nrhs_arg,
         formatter=py_str,
-        pivot_list=payload.pivot_list,
         pivot_locs=payload.pivot_locs,
-        bg_for_entries=payload.bg_for_entries,
         variable_colors=variable_colors,
         pivot_text_color=pivot_text_color,
-        ref_path_list=payload.ref_path_list,
         rowechelon_paths=payload.rowechelon_paths,
-        comment_list=payload.comment_list,
         text_annotations=payload.text_annotations,
         variable_summary=payload.variable_summary,
         rhs_status=payload.rhs_status,

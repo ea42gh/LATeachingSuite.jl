@@ -80,7 +80,7 @@ end
     end
 
     ge_seen = Dict{Symbol,Any}()
-    bg_specs = [[0, 1, [(0, 0), [(0, 0), (1, 0)]], "yellow!40", 1]]
+    decoration_specs = [Dict("grid" => (0, 1), "rows" => (0, 1), "cols" => (0, 0), "background" => "yellow!40", "padding_pt" => 1)]
     la_ge_bg = _py_ns_lat()
     _py_setattr_lat(la_ge_bg, "ge_svg", (args...; kwargs...) -> begin
         empty!(ge_seen)
@@ -89,10 +89,11 @@ end
     end)
     try
         LATeachingSuite._LAFigureSpecs[] = la_ge_bg
-        svg = LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; bg_for_entries=bg_specs)
+        svg = LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; decorations=decoration_specs)
         @test svg isa LATeachingSuite.SVGOut
-        @test ge_seen[:bg_for_entries] == bg_specs
+        @test ge_seen[:decorations] == decoration_specs
         @test get(ge_seen, :decorators, nothing) === nothing
+        @test !haskey(ge_seen, :bg_for_entries)
 
         callouts = [Dict("grid" => (0, 1), "label" => "A", "side" => "right")]
         decorations = [Dict("grid" => (0, 1), "rows" => (0, 0), "cols" => (0, 1), "background" => "yellow!35")]
@@ -116,6 +117,10 @@ end
         @test !haskey(ge_seen, :specs)
         @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; specs=callouts)
         @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; func=identity)
+        @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; pivot_list=[])
+        @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; bg_for_entries=[])
+        @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; ref_path_list=[])
+        @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; comment_list=[])
     finally
         LATeachingSuite._LAFigureSpecs[] = old_ge_la
     end
