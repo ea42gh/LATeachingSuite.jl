@@ -246,7 +246,6 @@ using Reexport
     rhs_matrix,
     rhs_column,
     ge_decorations,
-    show_ge_final,
     py_show_svg,
     show_svg,
     l_show_svd,

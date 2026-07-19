@@ -565,9 +565,9 @@ Render the final GE table from `matrices[end][end]` using the current
 
 Prefer canonical GE rendering keywords such as `n_rhs`, `formatter`,
 `variable_summary`, `array_names`, `output_dir`, `output_stem`, and
-`render_opts`. The older `show_ge_final` name and the older decoration
-keywords (`pivot_list`, `bg_for_entries`, `ref_path_list`, `comment_list`) are
-compatibility-only migration inputs; do not use them in new notebook cells.
+`render_opts`. The older decoration keywords (`pivot_list`, `bg_for_entries`,
+`ref_path_list`, `comment_list`) are compatibility-only migration inputs; do not
+use them in new notebook cells.
 """
 function julia_ge( matrices, desc, pivot_cols; n_rhs=0, formatter=to_latex, pivot_list=nothing, bg_for_entries=nothing,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"],
@@ -631,13 +631,6 @@ Emit the SVG payload for rich notebook display.
 function show(io::IO, ::MIME"image/svg+xml", x::SVGOut)
     print(io, x.svg)
 end
-"""
-    show_ge_final(args...; kwargs...) -> SVGOut
-
-Compatibility-only alias for `julia_ge` that returns `SVGOut`.
-"""
-show_ge_final(args...; kwargs...) = SVGOut(julia_ge(args...; kwargs...))
-
 function _matrices_are_strings(mats)
     for row in mats
         for cell in row
