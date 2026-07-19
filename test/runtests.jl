@@ -164,7 +164,7 @@ using LinearAlgebra
             Any[0, 1, Any[(1, 1)], "gray!20"],
         ],
     ]
-    nested_decor = LATeachingSuite._ge_backgrounds_to_decorations(nested_bg)
+    nested_decor = LATeachingSuite._ge_background_specs_to_decorations(nested_bg)
     @test length(nested_decor) == 2
     @test nested_decor[1]["entries"] == [(0, 0)]
     @test nested_decor[2]["entries"] == [(1, 1)]

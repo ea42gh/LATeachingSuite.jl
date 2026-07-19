@@ -297,7 +297,12 @@ function decorate_ge(description, pivot_cols, sizeA;
             path_list = [[0, 1, pivot_locs, "vh", path_color]]
             variable_types = ge_variable_type(pivot_cols, N)
         end
-        return pivot_list, bg_list, path_list, variable_types
+        return (
+            pivot_locs = _ge_pivot_specs_to_locs(pivot_list),
+            decorations = _ge_background_specs_to_decorations(bg_list),
+            rowechelon_paths = _ge_path_specs_to_rowechelon(path_list),
+            variable_summary = variable_types,
+        )
     end
 
     plist(pivot_cols) = [(row - 1, pivot_cols[row] - 1) for row in eachindex(pivot_cols)]
@@ -386,18 +391,23 @@ function decorate_ge(description, pivot_cols, sizeA;
     decorate_A!(pivot_dict, bg_dict, path_dict, description)
     decorate_E!(pivot_dict, bg_dict, path_dict, description, M)
 
-    [i for i in values(pivot_dict)],
-    [i for i in values(bg_dict)],
-    [i for i in values(path_dict)],
-    ge_variable_type(pivot_cols, N)
+    pivot_specs = [i for i in values(pivot_dict)]
+    background_specs = [i for i in values(bg_dict)]
+    path_specs = [i for i in values(path_dict)]
+    return (
+        pivot_locs = _ge_pivot_specs_to_locs(pivot_specs),
+        decorations = _ge_background_specs_to_decorations(background_specs),
+        rowechelon_paths = _ge_path_specs_to_rowechelon(path_specs),
+        variable_summary = ge_variable_type(pivot_cols, N),
+    )
 end
 
-function _ge_pivots_to_locs(pivot_list)
+function _ge_pivot_specs_to_locs(pivot_list)
     pivot_list === nothing && return nothing
     return [Dict("grid" => Tuple(spec[1]), "entries" => spec[2]) for spec in pivot_list]
 end
 
-function _ge_paths_to_rowechelon(path_list)
+function _ge_path_specs_to_rowechelon(path_list)
     path_list === nothing && return nothing
     return [
         Dict(
@@ -410,7 +420,7 @@ function _ge_paths_to_rowechelon(path_list)
     ]
 end
 
-function _ge_backgrounds_to_decorations(bg_list)
+function _ge_background_specs_to_decorations(bg_list)
     bg_list === nothing && return nothing
     decorations = Any[]
 
@@ -469,13 +479,7 @@ end
 Return canonical GE decoration keyword fields for `ge_svg`.
 """
 function ge_decorations(description, pivot_cols, sizeA; kwargs...)
-    legacy_pivots, legacy_backgrounds, legacy_paths, variable_summary = decorate_ge(description, pivot_cols, sizeA; kwargs...)
-    return (
-        pivot_locs = _ge_pivots_to_locs(legacy_pivots),
-        decorations = _ge_backgrounds_to_decorations(legacy_backgrounds),
-        rowechelon_paths = _ge_paths_to_rowechelon(legacy_paths),
-        variable_summary = variable_summary,
-    )
+    decorate_ge(description, pivot_cols, sizeA; kwargs...)
 end
 
 # ------------------------------------------------------------------------------
