@@ -26,7 +26,7 @@ function show_system(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fi
     tex = Base.invokelatest(py.pyconvert, String, tex)
     bs = load_matrixlayout()
     backsubst_svg = _pygetattr(bs, :backsubst_svg)
-    resolved_output_dir = output_dir !== nothing ? output_dir : pb.tmp_dir
+    resolved_output_dir = output_dir !== nothing ? output_dir : pb.artifact_dir
     svg = _pycall(backsubst_svg; system_txt=tex, show_system=true,
                   show_cascade=false, show_solution=false,
                   fig_scale=fig_scale, output_dir=resolved_output_dir,
@@ -273,11 +273,11 @@ function show_backsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::Str
         val = _inconsistent_rhs_value(pb, global_col)
         rhs_txt = val === nothing ? "?" : _rhs_val_to_tex(val)
         lines = [string("0 = ", rhs_txt), "\\text{No Solution}"]
-        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.tmp_dir, render_opts=render_opts)
+        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.artifact_dir, render_opts=render_opts)
     end
     A, b = _backsub_ref(pb; b_mat=b_mat, b_col=b_col)
     lines = load_LAFigureSpecs().backsubstitution_tex(A, b, var_name=var_name)
-    return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.tmp_dir, render_opts=render_opts)
+    return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.artifact_dir, render_opts=render_opts)
 end
 # --------------------------------------------------------------------------------------------------------------
 function show_forwardsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, render_svg=true, render_opts=nothing ) where T <: Number
@@ -289,7 +289,7 @@ function show_forwardsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::
     lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
     lines = _relabel_cascade(lines, size(A, 1); var_name=var_name)
     if render_svg
-        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.tmp_dir, render_opts=render_opts)
+        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.artifact_dir, render_opts=render_opts)
     end
     return _display_cascade(lines)
 end

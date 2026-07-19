@@ -34,7 +34,7 @@ raw"""pb = ShowGE{T}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="
   <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
   <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, (B1, B2, ...); output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number"""
 mutable struct ShowGE{T<:Number}
-    tmp_dir
+    artifact_dir
     keep_file
     A
     B
@@ -340,7 +340,7 @@ end
 
 function _resolve_ge_output_targets(pb::ShowGE, output_dir, output_stem)
     keep_dir, keep_stem = _keep_file_output_parts(pb.keep_file)
-    resolved_output_dir = output_dir !== nothing ? output_dir : (keep_dir !== nothing ? keep_dir : pb.tmp_dir)
+    resolved_output_dir = output_dir !== nothing ? output_dir : (keep_dir !== nothing ? keep_dir : pb.artifact_dir)
     resolved_output_stem = output_stem !== nothing ? output_stem : keep_stem
     return resolved_output_dir, resolved_output_stem
 end
