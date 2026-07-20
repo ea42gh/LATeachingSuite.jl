@@ -286,21 +286,21 @@ function decorate_ge(description, pivot_cols, sizeA;
     M, N = sizeA
     if description == []
         if pivot_cols == []
-            pivot_list = nothing
-            bg_list = nothing
-            path_list = nothing
+            pivot_specs = nothing
+            background_specs = nothing
+            path_specs = nothing
             variable_types = nothing
         else
             pivot_locs = [(i - 1, pivot_cols[i] - 1) for i in eachindex(pivot_cols)]
-            pivot_list = [[(0, 1), pivot_locs]]
-            bg_list = [[0, 1, pivot_locs, pivot_color]]
-            path_list = [[0, 1, pivot_locs, "vh", path_color]]
+            pivot_specs = [[(0, 1), pivot_locs]]
+            background_specs = [[0, 1, pivot_locs, pivot_color]]
+            path_specs = [[0, 1, pivot_locs, "vh", path_color]]
             variable_types = ge_variable_type(pivot_cols, N)
         end
         return (
-            pivot_locs = _ge_pivot_specs_to_locs(pivot_list),
-            decorations = _ge_background_specs_to_decorations(bg_list),
-            rowechelon_paths = _ge_path_specs_to_rowechelon(path_list),
+            pivot_locs = _ge_pivot_specs_to_locs(pivot_specs),
+            decorations = _ge_background_specs_to_decorations(background_specs),
+            rowechelon_paths = _ge_path_specs_to_rowechelon(path_specs),
             variable_summary = variable_types,
         )
     end
@@ -402,13 +402,13 @@ function decorate_ge(description, pivot_cols, sizeA;
     )
 end
 
-function _ge_pivot_specs_to_locs(pivot_list)
-    pivot_list === nothing && return nothing
-    return [Dict("grid" => Tuple(spec[1]), "entries" => spec[2]) for spec in pivot_list]
+function _ge_pivot_specs_to_locs(pivot_specs)
+    pivot_specs === nothing && return nothing
+    return [Dict("grid" => Tuple(spec[1]), "entries" => spec[2]) for spec in pivot_specs]
 end
 
-function _ge_path_specs_to_rowechelon(path_list)
-    path_list === nothing && return nothing
+function _ge_path_specs_to_rowechelon(path_specs)
+    path_specs === nothing && return nothing
     return [
         Dict(
             "grid" => (spec[1], spec[2]),
@@ -416,12 +416,12 @@ function _ge_path_specs_to_rowechelon(path_list)
             "case" => spec[4],
             "color" => (length(spec) >= 5 ? spec[5] : "blue"),
         )
-        for spec in path_list
+        for spec in path_specs
     ]
 end
 
-function _ge_background_specs_to_decorations(bg_list)
-    bg_list === nothing && return nothing
+function _ge_background_specs_to_decorations(background_specs)
+    background_specs === nothing && return nothing
     decorations = Any[]
 
     function append_spec!(spec)
@@ -467,7 +467,7 @@ function _ge_background_specs_to_decorations(bg_list)
         nothing
     end
 
-    for spec in bg_list
+    for spec in background_specs
         append_spec!(spec)
     end
     return decorations
