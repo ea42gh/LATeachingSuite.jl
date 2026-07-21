@@ -198,6 +198,8 @@ end
         svg_only = LATeachingSuite.qr_svg([1 0; 0 1])
         svg_bundle, spec = LATeachingSuite.qr_bundle([1 0; 0 1])
         svg_figure, mats = LATeachingSuite.qr_figure([1 0; 0 1])
+        @test_throws ArgumentError LATeachingSuite.qr_figure([1 0; 0 1]; preamble="% old")
+        @test_throws ArgumentError LATeachingSuite.qr_figure([1 0; 0 1]; extension="% old")
         qr = LATeachingSuite.qr_matrices_from_spec(spec)
         qr_grid = LATeachingSuite.qr_matrices_from_grid(:fake_grid)
         Q = LATeachingSuite.q_factor_from_spec(spec)

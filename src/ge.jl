@@ -749,7 +749,7 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex,
     if haskey(kwargs, :func)
         throw(ArgumentError("Removed GE mutation hook: func. Use decorators, decorations, callouts, text_annotations, or rowechelon_paths instead."))
     end
-    haskey(kwargs, :tmp_dir) && throw(ArgumentError("Removed artifact keyword: tmp_dir. Use output_dir instead."))
+    _reject_removed_artifact_keyword(kwargs)
     for old_kw in (:pivot_list, :bg_for_entries, :ref_path_list, :comment_list)
         if haskey(kwargs, old_kw)
             throw(ArgumentError("Removed GE decoration keyword: $(old_kw). Use pivot_locs, decorations, rowechelon_paths, or text_annotations instead."))
