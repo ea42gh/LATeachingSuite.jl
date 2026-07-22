@@ -45,7 +45,7 @@ linear algebra stack.
 
 ## Compatibility notes
 
-- The legacy `nM.*` compatibility surface has been removed.
+- The removed `nM.*` compatibility surface is no longer available.
 - Prefer `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`,
   `qr_matrices_from_spec`, `qr_matrices_from_grid`,
   `q_factor_from_spec`, `r_factor_from_spec`,

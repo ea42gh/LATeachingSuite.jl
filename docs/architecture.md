@@ -154,7 +154,7 @@ For canonical top-level teaching/display capabilities:
 
 ## Compatibility Surfaces
 
-The legacy `nM.*` compatibility layer has been removed. Prefer the canonical
+The removed `nM.*` compatibility layer is no longer available. Prefer the canonical
 top-level APIs:
 
 - `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
