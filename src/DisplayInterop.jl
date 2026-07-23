@@ -97,13 +97,6 @@ function l_show_svd(A, U, Σ, Vt, rankA)
     return nothing
 end
 
-function _clean_render_kwargs(kwargs)
-    clean = Dict(kwargs)
-    pop!(clean, :keep_file, nothing)
-    pop!(clean, :output_dir, nothing)
-    return clean
-end
-
 function _normalize_render_opts(render_opts)
     if render_opts === nothing
         return Dict{String,Any}()
