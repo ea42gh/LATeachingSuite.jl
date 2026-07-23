@@ -280,7 +280,7 @@ function ge_variable_type(pivot_cols, n)
     l
 end
 
-function decorate_ge(description, pivot_cols, sizeA;
+function _ge_decorations_impl(description, pivot_cols, sizeA;
     pivot_color="yellow!15", missing_pivot_color="gray!20",
     path_color="blue,line width=0.5mm")
     M, N = sizeA
@@ -479,7 +479,7 @@ end
 Return canonical GE decoration keyword fields for `ge_svg`.
 """
 function ge_decorations(description, pivot_cols, sizeA; kwargs...)
-    decorate_ge(description, pivot_cols, sizeA; kwargs...)
+    _ge_decorations_impl(description, pivot_cols, sizeA; kwargs...)
 end
 
 # ------------------------------------------------------------------------------
