@@ -43,10 +43,10 @@ linear algebra stack.
 - supporting matrix constructors used by those generators
 - exact arithmetic helpers that directly support generation
 
-## Compatibility notes
+## Current API notes
 
-- The removed `nM.*` compatibility surface is no longer available.
-- Prefer `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`,
+- The old `nM.*` namespace is not part of the public API.
+- Use `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`,
   `qr_matrices_from_spec`, `qr_matrices_from_grid`,
   `q_factor_from_spec`, `r_factor_from_spec`,
   `eig_matrices_from_spec`, `svd_matrices_from_spec`,

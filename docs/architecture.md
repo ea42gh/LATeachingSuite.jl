@@ -152,10 +152,9 @@ For canonical top-level teaching/display capabilities:
 - when the same capability is intentionally offered in both languages, require
   name parity as well
 
-## Compatibility Surfaces
+## Public API Surface
 
-The removed `nM.*` compatibility layer is no longer available. Prefer the canonical
-top-level APIs:
+The old `nM.*` namespace is not part of the public API. Use the canonical top-level APIs:
 
 - `ge_bundle`, `qr_bundle`, `eig_bundle`, `svd_bundle`
 - `qr_matrices_from_spec`, `qr_matrices_from_grid`,
