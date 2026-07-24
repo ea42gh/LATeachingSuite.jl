@@ -286,21 +286,21 @@ function _ge_decorations_impl(description, pivot_cols, sizeA;
     M, N = sizeA
     if description == []
         if pivot_cols == []
-            pivot_specs = nothing
-            background_specs = nothing
-            path_specs = nothing
+            pivot_records = nothing
+            background_records = nothing
+            path_records = nothing
             variable_types = nothing
         else
             pivot_locs = [(i - 1, pivot_cols[i] - 1) for i in eachindex(pivot_cols)]
-            pivot_specs = [[(0, 1), pivot_locs]]
-            background_specs = [[0, 1, pivot_locs, pivot_color]]
-            path_specs = [[0, 1, pivot_locs, "vh", path_color]]
+            pivot_records = [[(0, 1), pivot_locs]]
+            background_records = [[0, 1, pivot_locs, pivot_color]]
+            path_records = [[0, 1, pivot_locs, "vh", path_color]]
             variable_types = ge_variable_type(pivot_cols, N)
         end
         return (
-            pivot_locs = _ge_pivot_specs_to_locs(pivot_specs),
-            decorations = _ge_background_specs_to_decorations(background_specs),
-            rowechelon_paths = _ge_path_specs_to_rowechelon(path_specs),
+            pivot_locs = _ge_pivot_records_to_locs(pivot_records),
+            decorations = _ge_background_records_to_decorations(background_records),
+            rowechelon_paths = _ge_path_records_to_rowechelon(path_records),
             variable_summary = variable_types,
         )
     end
@@ -391,24 +391,24 @@ function _ge_decorations_impl(description, pivot_cols, sizeA;
     decorate_A!(pivot_dict, bg_dict, path_dict, description)
     decorate_E!(pivot_dict, bg_dict, path_dict, description, M)
 
-    pivot_specs = [i for i in values(pivot_dict)]
-    background_specs = [i for i in values(bg_dict)]
-    path_specs = [i for i in values(path_dict)]
+    pivot_records = [i for i in values(pivot_dict)]
+    background_records = [i for i in values(bg_dict)]
+    path_records = [i for i in values(path_dict)]
     return (
-        pivot_locs = _ge_pivot_specs_to_locs(pivot_specs),
-        decorations = _ge_background_specs_to_decorations(background_specs),
-        rowechelon_paths = _ge_path_specs_to_rowechelon(path_specs),
+        pivot_locs = _ge_pivot_records_to_locs(pivot_records),
+        decorations = _ge_background_records_to_decorations(background_records),
+        rowechelon_paths = _ge_path_records_to_rowechelon(path_records),
         variable_summary = ge_variable_type(pivot_cols, N),
     )
 end
 
-function _ge_pivot_specs_to_locs(pivot_specs)
-    pivot_specs === nothing && return nothing
-    return [Dict("grid" => Tuple(spec[1]), "entries" => spec[2]) for spec in pivot_specs]
+function _ge_pivot_records_to_locs(pivot_records)
+    pivot_records === nothing && return nothing
+    return [Dict("grid" => Tuple(spec[1]), "entries" => spec[2]) for spec in pivot_records]
 end
 
-function _ge_path_specs_to_rowechelon(path_specs)
-    path_specs === nothing && return nothing
+function _ge_path_records_to_rowechelon(path_records)
+    path_records === nothing && return nothing
     return [
         Dict(
             "grid" => (spec[1], spec[2]),
@@ -416,12 +416,12 @@ function _ge_path_specs_to_rowechelon(path_specs)
             "case" => spec[4],
             "color" => (length(spec) >= 5 ? spec[5] : "blue"),
         )
-        for spec in path_specs
+        for spec in path_records
     ]
 end
 
-function _ge_background_specs_to_decorations(background_specs)
-    background_specs === nothing && return nothing
+function _ge_background_records_to_decorations(background_records)
+    background_records === nothing && return nothing
     decorations = Any[]
 
     function append_spec!(spec)
@@ -467,7 +467,7 @@ function _ge_background_specs_to_decorations(background_specs)
         nothing
     end
 
-    for spec in background_specs
+    for spec in background_records
         append_spec!(spec)
     end
     return decorations
