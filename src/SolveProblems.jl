@@ -311,7 +311,7 @@ function _ge_decorations_impl(description, pivot_cols, sizeA;
 
     plist(pivot_cols) = [(row - 1, pivot_cols[row] - 1) for row in eachindex(pivot_cols)]
 
-    function decorate_A!(pivot_dict, bg_dict, path_dict, description)
+    function decorate_A!(pivot_by_grid, background_by_grid, path_by_grid, description)
         update = true
         for desc in description
             level = desc.level
@@ -319,85 +319,85 @@ function _ge_decorations_impl(description, pivot_cols, sizeA;
                 row = desc.row - 1
                 col = desc.col - 1
                 first = desc.gj ? 0 : row
-                bg_dict[(level, 1)] = [bg_dict[(level, 1)], [level, 1, [(row, col), [(first, col), (M - 1, col)]], pivot_color, 1]]
-                path_dict[(level, 1)] = [level, 1, plist(desc.pivot_cols), desc.yes ? "vv" : "vh", path_color]
+                background_by_grid[(level, 1)] = [background_by_grid[(level, 1)], [level, 1, [(row, col), [(first, col), (M - 1, col)]], pivot_color, 1]]
+                path_by_grid[(level, 1)] = [level, 1, plist(desc.pivot_cols), desc.yes ? "vv" : "vh", path_color]
             elseif typeof(desc) == FoundPivot
                 pl = plist(desc.pivot_cols)
-                pivot_dict[(level, 1)] = [(level, 1), pl]
-                bg_dict[(level, 1)] = [level, 1, pl, pivot_color]
+                pivot_by_grid[(level, 1)] = [(level, 1), pl]
+                background_by_grid[(level, 1)] = [level, 1, pl, pivot_color]
                 update = true
             elseif typeof(desc) == RequireRowExchange
                 len = length(desc.pivot_cols)
                 if len >= 2
-                    bg_dict[(level, 1)] = [[level, 1, [(desc.row_1 - 1, desc.col - 1), (desc.row_2 - 1, desc.col - 1)], missing_pivot_color],
+                    background_by_grid[(level, 1)] = [[level, 1, [(desc.row_1 - 1, desc.col - 1), (desc.row_2 - 1, desc.col - 1)], missing_pivot_color],
                                            [level, 1, plist(desc.pivot_cols[1:end-1]), pivot_color]]
                 elseif len == 1
-                    bg_dict[(level, 1)] = [level, 1, [(desc.row_1 - 1, desc.col - 1), (desc.row_2 - 1, desc.col - 1)], missing_pivot_color]
+                    background_by_grid[(level, 1)] = [level, 1, [(desc.row_1 - 1, desc.col - 1), (desc.row_2 - 1, desc.col - 1)], missing_pivot_color]
                 end
                 if len != 0
                     pl = plist(desc.pivot_cols)
-                    pivot_dict[(level, 1)] = [(level, 1), pl]
-                    bg_dict[(level, 1)] = [level, 1, pl, pivot_color]
-                    path_dict[(level, 1)] = [level, 1, pl, "vv", path_color]
+                    pivot_by_grid[(level, 1)] = [(level, 1), pl]
+                    background_by_grid[(level, 1)] = [level, 1, pl, pivot_color]
+                    path_by_grid[(level, 1)] = [level, 1, pl, "vv", path_color]
                 end
                 update = true
             elseif typeof(desc) == RequireScaling
                 if desc.pivot_cols != []
                     pl = plist(desc.pivot_cols)
                     if update
-                        pivot_dict[(level, 1)] = [(level, 1), pl]
-                        bg_dict[(level, 1)] = [level, 1, pl, pivot_color]
+                        pivot_by_grid[(level, 1)] = [(level, 1), pl]
+                        background_by_grid[(level, 1)] = [level, 1, pl, pivot_color]
                     end
-                    path_dict[(level, 1)] = [level, 1, pl, "vh", path_color]
+                    path_by_grid[(level, 1)] = [level, 1, pl, "vh", path_color]
                 end
                 update = true
             elseif typeof(desc) == Finished
                 if desc.pivot_cols != []
                     pl = plist(desc.pivot_cols)
-                    pivot_dict[(level, 1)] = [(level, 1), pl]
-                    bg_dict[(level, 1)] = [level, 1, pl, pivot_color]
-                    path_dict[(level, 1)] = [level, 1, pl, "vh", path_color]
+                    pivot_by_grid[(level, 1)] = [(level, 1), pl]
+                    background_by_grid[(level, 1)] = [level, 1, pl, pivot_color]
+                    path_by_grid[(level, 1)] = [level, 1, pl, "vh", path_color]
                 end
                 update = true
             end
         end
     end
 
-    function decorate_E!(pivot_dict, bg_dict, path_dict, description, M)
+    function decorate_E!(pivot_by_grid, background_by_grid, path_by_grid, description, M)
         for desc in description
             level = desc.level
             if typeof(desc) == DoElimination
                 c = desc.pivot_row - 1
-                pivot_dict[(level, 0)] = [(level, 0), [(c, c)]]
+                pivot_by_grid[(level, 0)] = [(level, 0), [(c, c)]]
                 if desc.gj
-                    path_dict[(level, 0)] = [level, 0, [(0, c)], "vv", path_color]
-                    bg_dict[(level, 0)] = [level, 0, [(c, c), [(0, c), (M - 1, c)]], pivot_color, 1]
+                    path_by_grid[(level, 0)] = [level, 0, [(0, c)], "vv", path_color]
+                    background_by_grid[(level, 0)] = [level, 0, [(c, c), [(0, c), (M - 1, c)]], pivot_color, 1]
                 else
-                    path_dict[(level, 0)] = [level, 0, [(c, c)], "vv", path_color]
-                    bg_dict[(level, 0)] = [level, 0, [(c, c), [(c, c), (M - 1, c)]], pivot_color, 1]
+                    path_by_grid[(level, 0)] = [level, 0, [(c, c)], "vv", path_color]
+                    background_by_grid[(level, 0)] = [level, 0, [(c, c), [(c, c), (M - 1, c)]], pivot_color, 1]
                 end
             elseif typeof(desc) == DoRowExchange
                 pl = [(desc.row_1 - 1, desc.row_2 - 1), (desc.row_2 - 1, desc.row_1 - 1)]
-                pivot_dict[(level, 0)] = [(level, 0), pl]
-                bg_dict[(level, 0)] = [level, 0, pl, missing_pivot_color]
+                pivot_by_grid[(level, 0)] = [(level, 0), pl]
+                background_by_grid[(level, 0)] = [level, 0, pl, missing_pivot_color]
             elseif typeof(desc) == DoScaling
                 pl = [(c, c) for c in 0:M-1]
-                pivot_dict[(level, 0)] = [(level, 0), pl]
-                bg_dict[(level, 0)] = [level, 0, pl, pivot_color]
+                pivot_by_grid[(level, 0)] = [(level, 0), pl]
+                background_by_grid[(level, 0)] = [level, 0, pl, pivot_color]
             end
         end
     end
 
-    pivot_dict = Dict{Tuple{Int, Int}, Any}()
-    bg_dict = Dict{Tuple{Int, Int}, Any}()
-    path_dict = Dict{Tuple{Int, Int}, Any}()
+    pivot_by_grid = Dict{Tuple{Int, Int}, Any}()
+    background_by_grid = Dict{Tuple{Int, Int}, Any}()
+    path_by_grid = Dict{Tuple{Int, Int}, Any}()
 
-    decorate_A!(pivot_dict, bg_dict, path_dict, description)
-    decorate_E!(pivot_dict, bg_dict, path_dict, description, M)
+    decorate_A!(pivot_by_grid, background_by_grid, path_by_grid, description)
+    decorate_E!(pivot_by_grid, background_by_grid, path_by_grid, description, M)
 
-    pivot_records = [pair.second for pair in sort(collect(pivot_dict); by=first)]
-    background_records = [pair.second for pair in sort(collect(bg_dict); by=first)]
-    path_records = [pair.second for pair in sort(collect(path_dict); by=first)]
+    pivot_records = [pair.second for pair in sort(collect(pivot_by_grid); by=first)]
+    background_records = [pair.second for pair in sort(collect(background_by_grid); by=first)]
+    path_records = [pair.second for pair in sort(collect(path_by_grid); by=first)]
     return _ge_decoration_keywords_from_records(
         pivot_records,
         background_records,
