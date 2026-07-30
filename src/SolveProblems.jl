@@ -424,21 +424,21 @@ function _ge_background_records_to_decorations(background_records)
     background_records === nothing && return nothing
     decorations = Any[]
 
-    function append_spec!(spec)
-        if !(spec isa AbstractVector)
+    function append_record!(record)
+        if !(record isa AbstractVector)
             return nothing
         end
-        if length(spec) < 4
-            for item in spec
-                append_spec!(item)
+        if length(record) < 4
+            for item in record
+                append_record!(item)
             end
             return nothing
         end
 
-        grid = (spec[1], spec[2])
-        locs = spec[3]
-        background = spec[4]
-        padding_pt = length(spec) >= 5 ? spec[5] : 0
+        grid = (record[1], record[2])
+        locs = record[3]
+        background = record[4]
+        padding_pt = length(record) >= 5 ? record[5] : 0
         for loc in locs
             if loc isa Tuple
                 push!(
@@ -467,8 +467,8 @@ function _ge_background_records_to_decorations(background_records)
         nothing
     end
 
-    for spec in background_records
-        append_spec!(spec)
+    for record in background_records
+        append_record!(record)
     end
     return decorations
 end
