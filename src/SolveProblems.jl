@@ -404,19 +404,19 @@ end
 
 function _ge_pivot_records_to_locs(pivot_records)
     pivot_records === nothing && return nothing
-    return [Dict("grid" => Tuple(spec[1]), "entries" => spec[2]) for spec in pivot_records]
+    return [Dict("grid" => Tuple(record[1]), "entries" => record[2]) for record in pivot_records]
 end
 
 function _ge_path_records_to_rowechelon(path_records)
     path_records === nothing && return nothing
     return [
         Dict(
-            "grid" => (spec[1], spec[2]),
-            "pivots" => spec[3],
-            "case" => spec[4],
-            "color" => (length(spec) >= 5 ? spec[5] : "blue"),
+            "grid" => (record[1], record[2]),
+            "pivots" => record[3],
+            "case" => record[4],
+            "color" => (length(record) >= 5 ? record[5] : "blue"),
         )
-        for spec in path_records
+        for record in path_records
     ]
 end
 
