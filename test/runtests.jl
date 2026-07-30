@@ -158,16 +158,15 @@ using LinearAlgebra
     @test dec.decorations[1]["background"] == "yellow!40"
     @test dec.rowechelon_paths[1]["case"] == "vh"
 
-    nested_bg = Any[
-        Any[
-            Any[0, 1, Any[(0, 0)], "yellow!40"],
-            Any[0, 1, Any[(1, 1)], "gray!20"],
-        ],
+    desc = Any[
+        LATeachingSuite.FoundPivot(level=0, row=1, pivot_row=1, pivot_col=1, cur_rank=1, pivot_cols=[1]),
+        LATeachingSuite.RequireElimination(level=0, gj=false, yes=true, row=2, col=1, cur_rank=1, pivot_cols=[1]),
     ]
-    nested_decor = LATeachingSuite._ge_background_records_to_decorations(nested_bg)
-    @test length(nested_decor) == 2
-    @test nested_decor[1]["entries"] == [(0, 0)]
-    @test nested_decor[2]["entries"] == [(1, 1)]
+    nested_dec = ge_decorations(desc, [1], (3, 3); pivot_color="yellow!40")
+    @test any(d -> get(d, "entries", nothing) == [(0, 0)], nested_dec.decorations)
+    @test any(d -> get(d, "entries", nothing) == [(1, 0)], nested_dec.decorations)
+    @test any(d -> get(d, "rows", nothing) == (1, 2) && get(d, "cols", nothing) == (0, 0), nested_dec.decorations)
+    @test nested_dec.rowechelon_paths[1]["case"] == "vv"
 
     Adef = Rational.(GenLAProblems.gen_non_diagonalizable_eigenproblem(2, 0; maxint=2))
     @test LATeachingSuite.charpoly(Adef) == LATeachingSuite.charpoly([2 1 0; 0 2 0; 0 0 0])
