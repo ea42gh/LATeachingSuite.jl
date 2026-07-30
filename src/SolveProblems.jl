@@ -280,6 +280,15 @@ function ge_variable_type(pivot_cols, n)
     l
 end
 
+function _ge_decoration_keywords_from_records(pivot_records, background_records, path_records, variable_summary)
+    return (
+        pivot_locs = _ge_pivot_records_to_locs(pivot_records),
+        decorations = _ge_background_records_to_decorations(background_records),
+        rowechelon_paths = _ge_path_records_to_rowechelon(path_records),
+        variable_summary = variable_summary,
+    )
+end
+
 function _ge_decorations_impl(description, pivot_cols, sizeA;
     pivot_color="yellow!15", missing_pivot_color="gray!20",
     path_color="blue,line width=0.5mm")
@@ -297,12 +306,7 @@ function _ge_decorations_impl(description, pivot_cols, sizeA;
             path_records = [[0, 1, pivot_locs, "vh", path_color]]
             variable_types = ge_variable_type(pivot_cols, N)
         end
-        return (
-            pivot_locs = _ge_pivot_records_to_locs(pivot_records),
-            decorations = _ge_background_records_to_decorations(background_records),
-            rowechelon_paths = _ge_path_records_to_rowechelon(path_records),
-            variable_summary = variable_types,
-        )
+        return _ge_decoration_keywords_from_records(pivot_records, background_records, path_records, variable_types)
     end
 
     plist(pivot_cols) = [(row - 1, pivot_cols[row] - 1) for row in eachindex(pivot_cols)]
@@ -394,11 +398,11 @@ function _ge_decorations_impl(description, pivot_cols, sizeA;
     pivot_records = [i for i in values(pivot_dict)]
     background_records = [i for i in values(bg_dict)]
     path_records = [i for i in values(path_dict)]
-    return (
-        pivot_locs = _ge_pivot_records_to_locs(pivot_records),
-        decorations = _ge_background_records_to_decorations(background_records),
-        rowechelon_paths = _ge_path_records_to_rowechelon(path_records),
-        variable_summary = ge_variable_type(pivot_cols, N),
+    return _ge_decoration_keywords_from_records(
+        pivot_records,
+        background_records,
+        path_records,
+        ge_variable_type(pivot_cols, N),
     )
 end
 
