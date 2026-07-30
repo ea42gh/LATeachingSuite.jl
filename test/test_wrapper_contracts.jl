@@ -134,10 +134,13 @@ end
     end)
     try
         LATeachingSuite._LAFigureSpecs[] = la_show_layout
-        pb = ShowGE{Rational{Int}}([1 2; 3 4], [5, 6])
+        pb = ShowGE{Rational{Int}}([1 2; 3 4], [5, 6]; output_dir="/tmp/la", output_stem="layout_example")
+        @test pb.output_stem == "layout_example"
         ref!(pb)
         svg = show_layout!(pb; fig_scale=1.1)
         @test svg isa LATeachingSuite.SVGOut
+        @test ge_seen[:output_dir] == "/tmp/la"
+        @test ge_seen[:output_stem] == "layout_example"
         @test !hasfield(typeof(pb), :pivot_list)
         @test !hasfield(typeof(pb), :bg_for_entries)
         @test !hasfield(typeof(pb), :ref_path_list)

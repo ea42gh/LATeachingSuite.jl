@@ -21,20 +21,21 @@ end
 
 # ==============================================================================================================
 
-raw"""pb = ShowGE{T}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{T}(A::AbstractMatrix{T}, (B1, B2, ...); output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, (B1, B2, ...); output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractVector{Complex{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number
-  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, (B1, B2, ...); output_dir="/tmp/la/run", keep_file="/tmp/la/run/show\\_layout") where T <: Number"""
+raw"""pb = ShowGE{T}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{T}(A::AbstractMatrix{T}, (B1, B2, ...); output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, (B1, B2, ...); output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractVector{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, (B1, B2, ...); output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number"""
 mutable struct ShowGE{T<:Number}
     artifact_dir
+    output_stem
     keep_file
     A
     B
@@ -58,73 +59,73 @@ mutable struct ShowGE{T<:Number}
     rhs_status
     rhs_consistent
 
-    function ShowGE(A::AbstractMatrix; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout")
-        ShowGE{eltype(A)}(A; output_dir=output_dir, keep_file=keep_file)
+    function ShowGE(A::AbstractMatrix; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing)
+        ShowGE{eltype(A)}(A; output_dir=output_dir, output_stem=output_stem, keep_file=keep_file)
     end
-    function ShowGE(A::AbstractMatrix, b; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout")
-        ShowGE{eltype(A)}(A, b; output_dir=output_dir, keep_file=keep_file)
+    function ShowGE(A::AbstractMatrix, b; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing)
+        ShowGE{eltype(A)}(A, b; output_dir=output_dir, output_stem=output_stem, keep_file=keep_file)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
-        new(output_dir, keep_file, A, nothing, Int[], false)
+    function ShowGE{T}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
+        new(output_dir, output_stem, keep_file, A, nothing, Int[], false)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         Bm = reshape(B, :, 1)
-        new(output_dir, keep_file, A, (Bm,), [1], false)
+        new(output_dir, output_stem, keep_file, A, (Bm,), [1], false)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
-        new(output_dir, keep_file, A, (B,), [size(B, 2)], false)
+    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
+        new(output_dir, output_stem, keep_file, A, (B,), [size(B, 2)], false)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}, Bs::Tuple; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{T}(A::AbstractMatrix{T}, Bs::Tuple; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         blocks = _normalize_rhs_blocks(Bs)
-        new(output_dir, keep_file, A, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, output_stem, keep_file, A, blocks, _rhs_group_sizes(blocks), false)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}, Bs::AbstractVector{<:AbstractMatrix{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{T}(A::AbstractMatrix{T}, Bs::AbstractVector{<:AbstractMatrix{T}}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         blocks = _normalize_rhs_blocks(Bs)
-        new(output_dir, keep_file, A, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, output_stem, keep_file, A, blocks, _rhs_group_sizes(blocks), false)
     end
 
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
-        new(output_dir, keep_file, Rational{T}.(A), nothing, Int[], false)
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
+        new(output_dir, output_stem, keep_file, Rational{T}.(A), nothing, Int[], false)
     end
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         Bm = Rational{T}.(reshape(B, :, 1))
-        new(output_dir, keep_file, Rational{T}.(A), (Bm,), [1], false)
+        new(output_dir, output_stem, keep_file, Rational{T}.(A), (Bm,), [1], false)
     end
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         Bm = Rational{T}.(B)
-        new(output_dir, keep_file, Rational{T}.(A), (Bm,), [size(Bm, 2)], false)
+        new(output_dir, output_stem, keep_file, Rational{T}.(A), (Bm,), [size(Bm, 2)], false)
     end
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, Bs::Tuple; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, Bs::Tuple; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         A2 = Rational{T}.(A)
         blocks = _normalize_rhs_blocks(map(B -> Rational{T}.(B), Bs))
-        new(output_dir, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, output_stem, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
     end
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, Bs::AbstractVector{<:AbstractMatrix{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, Bs::AbstractVector{<:AbstractMatrix{T}}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         A2 = Rational{T}.(A)
         blocks = _normalize_rhs_blocks(map(B -> Rational{T}.(B), Bs))
-        new(output_dir, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, output_stem, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
     end
 
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
-        new(output_dir, keep_file, Complex{Rational{T}}.(A), nothing, Int[], false)
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
+        new(output_dir, output_stem, keep_file, Complex{Rational{T}}.(A), nothing, Int[], false)
     end
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractVector{Complex{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractVector{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         Bm = Complex{Rational{T}}.(reshape(B, :, 1))
-        new(output_dir, keep_file, Complex{Rational{T}}.(A), (Bm,), [1], false)
+        new(output_dir, output_stem, keep_file, Complex{Rational{T}}.(A), (Bm,), [1], false)
     end
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         Bm = Complex{Rational{T}}.(B)
-        new(output_dir, keep_file, Complex{Rational{T}}.(A), (Bm,), [size(Bm, 2)], false)
+        new(output_dir, output_stem, keep_file, Complex{Rational{T}}.(A), (Bm,), [size(Bm, 2)], false)
     end
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, Bs::Tuple; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, Bs::Tuple; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         A2 = Complex{Rational{T}}.(A)
         blocks = _normalize_rhs_blocks(map(B -> Complex{Rational{T}}.(B), Bs))
-        new(output_dir, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, output_stem, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
     end
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, Bs::AbstractVector{<:AbstractMatrix{Complex{T}}}; output_dir="/tmp/la/run", keep_file="/tmp/la/run/show_layout") where T <: Number
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, Bs::AbstractVector{<:AbstractMatrix{Complex{T}}}; output_dir="/tmp/la/run", output_stem="show_layout", keep_file=nothing) where T <: Number
         A2 = Complex{Rational{T}}.(A)
         blocks = _normalize_rhs_blocks(map(B -> Complex{Rational{T}}.(B), Bs))
-        new(output_dir, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
+        new(output_dir, output_stem, keep_file, A2, blocks, _rhs_group_sizes(blocks), false)
     end
 end
 
@@ -341,7 +342,7 @@ end
 function _resolve_ge_output_targets(pb::ShowGE, output_dir, output_stem)
     keep_dir, keep_stem = _keep_file_output_parts(pb.keep_file)
     resolved_output_dir = output_dir !== nothing ? output_dir : (keep_dir !== nothing ? keep_dir : pb.artifact_dir)
-    resolved_output_stem = output_stem !== nothing ? output_stem : keep_stem
+    resolved_output_stem = output_stem !== nothing ? output_stem : (keep_stem !== nothing ? keep_stem : pb.output_stem)
     return resolved_output_dir, resolved_output_stem
 end
 
