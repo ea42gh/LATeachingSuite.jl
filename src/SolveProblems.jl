@@ -395,9 +395,9 @@ function _ge_decorations_impl(description, pivot_cols, sizeA;
     decorate_A!(pivot_dict, bg_dict, path_dict, description)
     decorate_E!(pivot_dict, bg_dict, path_dict, description, M)
 
-    pivot_records = [i for i in values(pivot_dict)]
-    background_records = [i for i in values(bg_dict)]
-    path_records = [i for i in values(path_dict)]
+    pivot_records = [pair.second for pair in sort(collect(pivot_dict); by=first)]
+    background_records = [pair.second for pair in sort(collect(bg_dict); by=first)]
+    path_records = [pair.second for pair in sort(collect(path_dict); by=first)]
     return _ge_decoration_keywords_from_records(
         pivot_records,
         background_records,

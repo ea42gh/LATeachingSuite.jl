@@ -167,6 +167,8 @@ using LinearAlgebra
     @test any(d -> get(d, "entries", nothing) == [(1, 0)], nested_dec.decorations)
     @test any(d -> get(d, "rows", nothing) == (1, 2) && get(d, "cols", nothing) == (0, 0), nested_dec.decorations)
     @test nested_dec.rowechelon_paths[1]["case"] == "vv"
+    @test nested_dec.pivot_locs[1]["grid"] == (0, 1)
+    @test nested_dec.rowechelon_paths[1]["grid"] == (0, 1)
 
     Adef = Rational.(GenLAProblems.gen_non_diagonalizable_eigenproblem(2, 0; maxint=2))
     @test LATeachingSuite.charpoly(Adef) == LATeachingSuite.charpoly([2 1 0; 0 2 0; 0 0 0])
