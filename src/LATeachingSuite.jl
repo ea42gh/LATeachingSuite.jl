@@ -357,7 +357,6 @@ function _split_qr_figure_kwargs(kwargs)
             spec_kw[k] = v
         end
     end
-    pop!(render_kw, :keep_file, nothing)
     return matrices_kw, spec_kw, render_kw
 end
 
