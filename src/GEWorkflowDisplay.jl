@@ -216,41 +216,38 @@ function _display_cascade(lines)
     return tex
 end
 
-function _render_backsubst_svg(lines; fig_scale=nothing, output_dir=nothing, render_opts=nothing)
-    ml = load_matrixlayout()
-    backsubst_svg = _pygetattr(ml, :backsubst_svg)
+function _backsubst_svg_kwargs(; fig_scale=nothing, output_dir=nothing, render_opts=nothing)
     kwargs = Dict{Symbol, Any}()
-    render_opts = _normalize_render_opts(render_opts)
-    kwargs[:cascade_txt] = _ge_to_pylist(lines)
-    kwargs[:show_system] = false
-    kwargs[:show_cascade] = true
-    kwargs[:show_solution] = false
     if fig_scale !== nothing
         kwargs[:fig_scale] = fig_scale
     end
     if output_dir !== nothing
         kwargs[:output_dir] = output_dir
     end
-    svg = _pycall(backsubst_svg; kwargs..., render_opts=render_opts)
+    kwargs[:render_opts] = _normalize_render_opts(render_opts)
+    return kwargs
+end
+function _render_backsubst_svg(lines; fig_scale=nothing, output_dir=nothing, render_opts=nothing)
+    ml = load_matrixlayout()
+    backsubst_svg = _pygetattr(ml, :backsubst_svg)
+    kwargs = _backsubst_svg_kwargs(fig_scale=fig_scale, output_dir=output_dir, render_opts=render_opts)
+    kwargs[:cascade_txt] = _ge_to_pylist(lines)
+    kwargs[:show_system] = false
+    kwargs[:show_cascade] = true
+    kwargs[:show_solution] = false
+    svg = _pycall(backsubst_svg; kwargs...)
     return _show_svg(svg)
 end
 
 function _render_solution_svg(solution_tex; fig_scale=nothing, output_dir=nothing, render_opts=nothing)
     ml = load_matrixlayout()
     backsubst_svg = _pygetattr(ml, :backsubst_svg)
-    kwargs = Dict{Symbol, Any}()
-    render_opts = _normalize_render_opts(render_opts)
+    kwargs = _backsubst_svg_kwargs(fig_scale=fig_scale, output_dir=output_dir, render_opts=render_opts)
     kwargs[:solution_txt] = solution_tex
     kwargs[:show_system] = false
     kwargs[:show_cascade] = false
     kwargs[:show_solution] = true
-    if fig_scale !== nothing
-        kwargs[:fig_scale] = fig_scale
-    end
-    if output_dir !== nothing
-        kwargs[:output_dir] = output_dir
-    end
-    svg = _pycall(backsubst_svg; kwargs..., render_opts=render_opts)
+    svg = _pycall(backsubst_svg; kwargs...)
     return _show_svg(svg)
 end
 
