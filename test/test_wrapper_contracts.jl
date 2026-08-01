@@ -304,7 +304,7 @@ end
     try
         LATeachingSuite._LAFigureSpecs[] = la
         LATeachingSuite._matrixlayout[] = ml
-        svg = show_system(pb; b_mat=1, b_col=1, fig_scale=1.2)
+        svg = show_system(pb; b_mat=1, b_col=1, fig_scale=1.2, output_stem="system_demo")
         @test svg isa LATeachingSuite.SVGOut
         @test seen[:A] == A2
         @test seen[:b] == b2
@@ -312,6 +312,7 @@ end
         @test seen[:show_cascade] === false
         @test seen[:show_solution] === false
         @test seen[:fig_scale] == 1.2
+        @test seen[:output_stem] == "system_demo"
     finally
         LATeachingSuite._LAFigureSpecs[] = old_la
         LATeachingSuite._matrixlayout[] = old_ml
@@ -344,7 +345,7 @@ end
     try
         LATeachingSuite._LAFigureSpecs[] = la
         LATeachingSuite._matrixlayout[] = ml
-        svg = show_backsubstitution!(pb; b_mat=1, b_col=1, fig_scale=1.3,
+        svg = show_backsubstitution!(pb; b_mat=1, b_col=1, param_name="\\beta", fig_scale=1.3, output_stem="backsub_demo",
             render_opts=Dict("padding" => (LATeachingSuite.mm_to_px(10), LATeachingSuite.mm_to_px(10), 4, 4), "frame" => true))
         @test svg isa LATeachingSuite.SVGOut
         @test seen[:A] == A2
@@ -353,6 +354,8 @@ end
         @test seen[:show_cascade] === true
         @test seen[:show_solution] === false
         @test seen[:fig_scale] == 1.3
+        @test seen[:output_stem] == "backsub_demo"
+        @test seen[:kwargs][:param_name] == "\\beta"
         @test seen[:render_opts]["padding"] == (LATeachingSuite.mm_to_px(10), LATeachingSuite.mm_to_px(10), 4, 4)
         @test seen[:render_opts]["frame"] === true
     finally
@@ -391,10 +394,11 @@ end
             (:eig, LATeachingSuite.eig_bundle),
             (:svd, LATeachingSuite.svd_bundle),
         ]
-            svg, spec = fn([1 0; 0 1]; output_dir="/tmp/lat", render_opts=Dict("crop" => "tight"))
+            svg, spec = fn([1 0; 0 1]; output_dir="/tmp/lat", output_stem="bundle_demo", render_opts=Dict("crop" => "tight"))
             @test svg isa LATeachingSuite.SVGOut
             @test occursin(string(kind), svg.svg)
             @test seen[kind][:output_dir] == "/tmp/lat"
+            @test seen[kind][:output_stem] == "bundle_demo"
             @test haskey(seen[kind], :render_opts)
             py = LATeachingSuite.ensure_pythoncall!()
             @test Base.invokelatest(py.pyconvert, String, spec["kind"]) == String(kind)

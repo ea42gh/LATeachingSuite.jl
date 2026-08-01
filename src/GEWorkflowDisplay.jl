@@ -17,7 +17,7 @@ function _system_matrix_rhs(pb::ShowGE{T}; b_mat=1, b_col=1) where T <: Number
     return A, b
 end
 
-function show_system(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, output_dir=nothing, render_opts=nothing) where T <: Number
+function show_system(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, output_dir=nothing, output_stem=nothing, render_opts=nothing) where T <: Number
     A, b = _system_matrix_rhs(pb; b_mat=b_mat, b_col=b_col)
     la = load_LAFigureSpecs()
     linear_system_tex = _pygetattr(la, :linear_system_tex)
@@ -26,10 +26,11 @@ function show_system(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fi
     tex = Base.invokelatest(py.pyconvert, String, tex)
     bs = load_matrixlayout()
     backsubst_svg = _pygetattr(bs, :backsubst_svg)
-    resolved_output_dir = output_dir !== nothing ? output_dir : pb.artifact_dir
+    resolved_output_dir, resolved_output_stem = _resolve_ge_output_targets(pb, output_dir, output_stem)
     svg = _pycall(backsubst_svg; system_txt=tex, show_system=true,
                   show_cascade=false, show_solution=false,
                   fig_scale=fig_scale, output_dir=resolved_output_dir,
+                  output_stem=resolved_output_stem,
                   render_opts=render_opts)
     svg_str = Base.invokelatest(py.pyconvert, String, svg)
     return SVGOut(svg_str)
@@ -216,7 +217,7 @@ function _display_cascade(lines)
     return tex
 end
 
-function _backsubst_svg_kwargs(; fig_scale=nothing, output_dir=nothing, render_opts=nothing)
+function _backsubst_svg_kwargs(; fig_scale=nothing, output_dir=nothing, output_stem=nothing, render_opts=nothing)
     kwargs = Dict{Symbol, Any}()
     if fig_scale !== nothing
         kwargs[:fig_scale] = fig_scale
@@ -224,13 +225,16 @@ function _backsubst_svg_kwargs(; fig_scale=nothing, output_dir=nothing, render_o
     if output_dir !== nothing
         kwargs[:output_dir] = output_dir
     end
+    if output_stem !== nothing
+        kwargs[:output_stem] = output_stem
+    end
     kwargs[:render_opts] = _normalize_render_opts(render_opts)
     return kwargs
 end
-function _render_backsubst_svg(lines; fig_scale=nothing, output_dir=nothing, render_opts=nothing)
+function _render_backsubst_svg(lines; fig_scale=nothing, output_dir=nothing, output_stem=nothing, render_opts=nothing)
     ml = load_matrixlayout()
     backsubst_svg = _pygetattr(ml, :backsubst_svg)
-    kwargs = _backsubst_svg_kwargs(fig_scale=fig_scale, output_dir=output_dir, render_opts=render_opts)
+    kwargs = _backsubst_svg_kwargs(fig_scale=fig_scale, output_dir=output_dir, output_stem=output_stem, render_opts=render_opts)
     kwargs[:cascade_txt] = _ge_to_pylist(lines)
     kwargs[:show_system] = false
     kwargs[:show_cascade] = true
@@ -239,10 +243,10 @@ function _render_backsubst_svg(lines; fig_scale=nothing, output_dir=nothing, ren
     return _show_svg(svg)
 end
 
-function _render_solution_svg(solution_tex; fig_scale=nothing, output_dir=nothing, render_opts=nothing)
+function _render_solution_svg(solution_tex; fig_scale=nothing, output_dir=nothing, output_stem=nothing, render_opts=nothing)
     ml = load_matrixlayout()
     backsubst_svg = _pygetattr(ml, :backsubst_svg)
-    kwargs = _backsubst_svg_kwargs(fig_scale=fig_scale, output_dir=output_dir, render_opts=render_opts)
+    kwargs = _backsubst_svg_kwargs(fig_scale=fig_scale, output_dir=output_dir, output_stem=output_stem, render_opts=render_opts)
     kwargs[:solution_txt] = solution_tex
     kwargs[:show_system] = false
     kwargs[:show_cascade] = false
@@ -264,29 +268,32 @@ end
 
 Render the back-substitution cascade for a `ShowGE` problem.
 """
-function show_backsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, render_opts=nothing ) where T <: Number
+function show_backsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", param_name::String="\\alpha", fig_scale=1, output_dir=nothing, output_stem=nothing, render_opts=nothing ) where T <: Number
     global_col = _rhs_col_count(pb) > 0 ? _rhs_global_col_index(pb, Int(b_mat), Int(b_col)) : 0
     if global_col > 0 && isdefined(pb, :rhs_status) && global_col <= length(pb.rhs_status) && pb.rhs_status[global_col] == :inconsistent
         val = _inconsistent_rhs_value(pb, global_col)
         rhs_txt = val === nothing ? "?" : _rhs_val_to_tex(val)
         lines = [string("0 = ", rhs_txt), "\\text{No Solution}"]
-        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.artifact_dir, render_opts=render_opts)
+        resolved_output_dir, resolved_output_stem = _resolve_ge_output_targets(pb, output_dir, output_stem)
+        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=resolved_output_dir, output_stem=resolved_output_stem, render_opts=render_opts)
     end
     A, b = _backsub_ref(pb; b_mat=b_mat, b_col=b_col)
-    lines = load_LAFigureSpecs().backsubstitution_tex(A, b, var_name=var_name)
-    return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.artifact_dir, render_opts=render_opts)
+    lines = load_LAFigureSpecs().backsubstitution_tex(A, b, var_name=var_name, param_name=param_name)
+    resolved_output_dir, resolved_output_stem = _resolve_ge_output_targets(pb, output_dir, output_stem)
+    return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=resolved_output_dir, output_stem=resolved_output_stem, render_opts=render_opts)
 end
 # --------------------------------------------------------------------------------------------------------------
-function show_forwardsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, render_svg=true, render_opts=nothing ) where T <: Number
+function show_forwardsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", param_name::String="\\alpha", fig_scale=1, output_dir=nothing, output_stem=nothing, render_svg=true, render_opts=nothing ) where T <: Number
     A, b = _forwardsub_ref(pb; b_mat=b_mat, b_col=b_col, exact=false)
     Arev = A[end:-1:1, end:-1:1]
     brev = b[end:-1:1]
     A2 = _python_exact_literal_if_needed(Arev)
     b2 = _python_exact_literal_if_needed(brev)
-    lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
-    lines = _relabel_cascade(lines, size(A, 1); var_name=var_name)
+    lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name, param_name=param_name)
+    lines = _relabel_cascade(lines, size(A, 1); var_name=var_name, param_name=param_name)
     if render_svg
-        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=pb.artifact_dir, render_opts=render_opts)
+        resolved_output_dir, resolved_output_stem = _resolve_ge_output_targets(pb, output_dir, output_stem)
+        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=resolved_output_dir, output_stem=resolved_output_stem, render_opts=render_opts)
     end
     return _display_cascade(lines)
 end
@@ -296,14 +303,15 @@ end
 
 Render the solution vector/form for a `ShowGE` problem.
 """
-function show_solution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", fig_scale=1, render_opts=nothing ) where T <: Number
+function show_solution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", param_name::String="\\alpha", fig_scale=1, output_dir=nothing, output_stem=nothing, render_opts=nothing ) where T <: Number
     global_col = _rhs_col_count(pb) > 0 ? _rhs_global_col_index(pb, Int(b_mat), Int(b_col)) : 0
     if global_col > 0 && isdefined(pb, :rhs_status) && global_col <= length(pb.rhs_status) && pb.rhs_status[global_col] == :inconsistent
         return Vector{T}()
     end
     A, b = _backsub_ref(pb; b_mat=b_mat, b_col=b_col)
-    tex = load_LAFigureSpecs().standard_solution_tex(A, b, var_name=var_name)
-    return _render_solution_svg(tex; fig_scale=fig_scale, render_opts=render_opts)
+    tex = load_LAFigureSpecs().standard_solution_tex(A, b, var_name=var_name, param_name=param_name)
+    resolved_output_dir, resolved_output_stem = _resolve_ge_output_targets(pb, output_dir, output_stem)
+    return _render_solution_svg(tex; fig_scale=fig_scale, output_dir=resolved_output_dir, output_stem=resolved_output_stem, render_opts=render_opts)
 end
 # ==============================================================================================================
 raw"""
@@ -314,12 +322,12 @@ raw"""
     exact `Rational` and `Complex{Rational}` inputs (those are converted to tuples so
     SymPy reconstructs exact rationals on the Python side).
 """
-function show_backsubstitution(A, b; var_name::String="x", fig_scale=1, output_dir="/tmp/la/run", render_svg=true, render_opts=nothing)
+function show_backsubstitution(A, b; var_name::String="x", param_name::String="\\alpha", fig_scale=1, output_dir="/tmp/la/run", output_stem=nothing, render_svg=true, render_opts=nothing)
     A2 = _python_exact_literal_if_needed(A)
     b2 = _python_exact_literal_if_needed(b)
-    lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
+    lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name, param_name=param_name)
     if render_svg
-        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=output_dir, render_opts=render_opts)
+        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=output_dir, output_stem=output_stem, render_opts=render_opts)
     end
     return _display_cascade(lines)
 end
@@ -332,15 +340,15 @@ using the LAFigureSpecs backsubstitution cascade on a reversed system, then rela
 Supports Integer/Float as well as exact `Rational` and `Complex{Rational}` inputs
 converted to tuples for exact SymPy reconstruction.
 """
-function show_forwardsubstitution(A, b; var_name::String="x", fig_scale=1, output_dir="/tmp/la/run", render_svg=true, render_opts=nothing)
+function show_forwardsubstitution(A, b; var_name::String="x", param_name::String="\\alpha", fig_scale=1, output_dir="/tmp/la/run", output_stem=nothing, render_svg=true, render_opts=nothing)
     Arev = A[end:-1:1, end:-1:1]
     brev = b[end:-1:1]
     A2 = _python_exact_literal_if_needed(Arev)
     b2 = _python_exact_literal_if_needed(brev)
-    lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name)
-    lines = _relabel_cascade(lines, size(A, 1); var_name=var_name)
+    lines = load_LAFigureSpecs().backsubstitution_tex(A2, b2, var_name=var_name, param_name=param_name)
+    lines = _relabel_cascade(lines, size(A, 1); var_name=var_name, param_name=param_name)
     if render_svg
-        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=output_dir, render_opts=render_opts)
+        return _render_backsubst_svg(lines; fig_scale=fig_scale, output_dir=output_dir, output_stem=output_stem, render_opts=render_opts)
     end
     return _display_cascade(lines)
 end
