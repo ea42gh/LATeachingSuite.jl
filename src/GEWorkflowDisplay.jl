@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------------------------------------------------
 """
-    show_system(pb; b_mat=1, b_col=1, var_name="x", fig_scale=1)
+    show_system(pb; b_mat=1, b_col=1, var_name="x", fig_scale=1, output_dir=nothing, output_stem=nothing, render_opts=nothing)
 
 Render the linear system associated with a `ShowGE` problem.
 """
@@ -264,7 +264,7 @@ function _display_tex(tex)
     return tex
 end
 """
-    show_backsubstitution!(pb; b_mat=1, b_col=1, var_name="x", fig_scale=1)
+    show_backsubstitution!(pb; b_mat=1, b_col=1, var_name="x", param_name="\alpha", fig_scale=1, output_dir=nothing, output_stem=nothing, render_opts=nothing)
 
 Render the back-substitution cascade for a `ShowGE` problem.
 """
@@ -299,7 +299,7 @@ function show_forwardsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::
 end
 # --------------------------------------------------------------------------------------------------------------
 """
-    show_solution!(pb; b_mat=1, b_col=1, var_name="x", fig_scale=1)
+    show_solution!(pb; b_mat=1, b_col=1, var_name="x", param_name="\alpha", fig_scale=1, output_dir=nothing, output_stem=nothing, render_opts=nothing)
 
 Render the solution vector/form for a `ShowGE` problem.
 """
@@ -315,7 +315,7 @@ function show_solution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x",
 end
 # ==============================================================================================================
 raw"""
-    show_backsubstitution(A, b; var_name="x", fig_scale=1, output_dir="/tmp/la/run", render_svg=true)
+    show_backsubstitution(A, b; var_name="x", param_name="\alpha", fig_scale=1, output_dir="/tmp/la/run", output_stem=nothing, render_svg=true, render_opts=nothing)
 
     Render the back-substitution cascade for the upper-triangular system `A * x = b`
     using `LAFigureSpecs.backsubstitution_tex`. Works with Integer/Float as well as
@@ -333,7 +333,7 @@ function show_backsubstitution(A, b; var_name::String="x", param_name::String="\
 end
 # --------------------------------------------------------------------------------------------------------------
 raw"""
-    show_forwardsubstitution(A, b; var_name="x", fig_scale=1, output_dir="/tmp/la/run", render_svg=true)
+    show_forwardsubstitution(A, b; var_name="x", param_name="\alpha", fig_scale=1, output_dir="/tmp/la/run", output_stem=nothing, render_svg=true, render_opts=nothing)
 
 Render the forward-substitution cascade for the lower-triangular system `A * x = b`
 using the LAFigureSpecs backsubstitution cascade on a reversed system, then relabeling indices.

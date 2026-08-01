@@ -66,6 +66,10 @@ Use the accessors to inspect the selected matrices and columns:
 - `rhs_column(pb, b_mat=1, b_col=1; step=:final)`
 - `solutions(pb; b_mat=1, b_col=nothing)`
 
+Display helpers accept the same artifact naming concepts as the Python stack:
+`output_dir`, `output_stem`, and `render_opts`. Substitution and solution
+helpers also accept `param_name`, defaulting to `"\alpha"`.
+
 ## Package Roles
 
 The current stack has four package roles:
