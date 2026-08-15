@@ -122,6 +122,7 @@ end
         @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; ref_path_list=[])
         @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; comment_list=[])
         @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; tmp_dir="/tmp/old")
+        @test_throws ArgumentError LATeachingSuite.ge_svg([[nothing, [1 0; 0 1]]]; keep_file="/tmp/old")
     finally
         LATeachingSuite._LAFigureSpecs[] = old_ge_la
     end
@@ -203,6 +204,8 @@ end
         svg_figure, mats = LATeachingSuite.qr_figure([1 0; 0 1])
         @test_throws ArgumentError LATeachingSuite.qr_figure([1 0; 0 1]; preamble="% old")
         @test_throws ArgumentError LATeachingSuite.qr_figure([1 0; 0 1]; extension="% old")
+        @test_throws ArgumentError LATeachingSuite.qr_figure([1 0; 0 1]; tmp_dir="/tmp/old")
+        @test_throws ArgumentError LATeachingSuite.qr_figure([1 0; 0 1]; keep_file="/tmp/old")
         qr = LATeachingSuite.qr_matrices_from_spec(spec)
         qr_grid = LATeachingSuite.qr_matrices_from_grid(:fake_grid)
         Q = LATeachingSuite.q_factor_from_spec(spec)
@@ -404,6 +407,7 @@ end
             @test Base.invokelatest(py.pyconvert, String, spec["kind"]) == String(kind)
             @test Base.invokelatest(py.pyconvert, Int, spec["argc"]) == 1
             @test_throws ArgumentError fn([1 0; 0 1]; tmp_dir="/tmp/old")
+            @test_throws ArgumentError fn([1 0; 0 1]; keep_file="/tmp/old")
         end
     finally
         LATeachingSuite._LAFigureSpecs[] = old_la

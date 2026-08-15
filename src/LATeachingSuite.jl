@@ -64,9 +64,9 @@ end
 mm_to_px(mm::Real) = float(mm) * 96.0 / 25.4
 px_to_mm(px::Real) = float(px) * 25.4 / 96.0
 
-_removed_artifact_keyword_error() = ArgumentError("Removed artifact keyword: tmp_dir. Use output_dir instead.")
+_removed_artifact_keyword_error() = ArgumentError("Removed artifact keyword: tmp_dir/keep_file. Use output_dir/output_stem instead.")
 _removed_tex_hook_error() = ArgumentError("Removed TeX hook keyword: preamble/extension. Use body_preamble/document_preamble instead.")
-_reject_removed_artifact_keyword(kwargs) = haskey(kwargs, :tmp_dir) && throw(_removed_artifact_keyword_error())
+_reject_removed_artifact_keyword(kwargs) = (haskey(kwargs, :tmp_dir) || haskey(kwargs, :keep_file)) && throw(_removed_artifact_keyword_error())
 function _reject_removed_tex_hook_keywords(kwargs)
     if haskey(kwargs, :preamble) || haskey(kwargs, :extension)
         throw(_removed_tex_hook_error())
@@ -341,7 +341,7 @@ function _split_qr_figure_kwargs(kwargs)
     spec_kw = Dict{Symbol,Any}()
     render_kw = Dict{Symbol,Any}()
     for (k, v) in kwargs
-        k === :tmp_dir && throw(_removed_artifact_keyword_error())
+        (k === :tmp_dir || k === :keep_file) && throw(_removed_artifact_keyword_error())
         if k === :preamble || k === :extension
             _reject_removed_tex_hook_keywords(kwargs)
         elseif k === :strict
