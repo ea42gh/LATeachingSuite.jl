@@ -64,15 +64,6 @@ end
 mm_to_px(mm::Real) = float(mm) * 96.0 / 25.4
 px_to_mm(px::Real) = float(px) * 25.4 / 96.0
 
-_removed_artifact_keyword_error() = ArgumentError("Removed artifact keyword: tmp_dir/keep_file. Use output_dir/output_stem instead.")
-_removed_tex_hook_error() = ArgumentError("Removed TeX hook keyword: preamble/extension. Use body_preamble/document_preamble instead.")
-_reject_removed_artifact_keyword(kwargs) = (haskey(kwargs, :tmp_dir) || haskey(kwargs, :keep_file)) && throw(_removed_artifact_keyword_error())
-function _reject_removed_tex_hook_keywords(kwargs)
-    if haskey(kwargs, :preamble) || haskey(kwargs, :extension)
-        throw(_removed_tex_hook_error())
-    end
-end
-
 _ensure_blockarrays() = BlockArrays
 
 function _py_is_none(x)
@@ -296,7 +287,6 @@ end
 
 function _bundle_wrapper(bundle_sym::Symbol)
     return function (args...; kwargs...)
-        _reject_removed_artifact_keyword(kwargs)
         la = load_LAFigureSpecs()
         bundle_fn = _pygetattr(la, bundle_sym)
         spec, svg, render_error = _bundle_result(_pycall(bundle_fn, args...; kwargs...))
@@ -341,10 +331,7 @@ function _split_qr_figure_kwargs(kwargs)
     spec_kw = Dict{Symbol,Any}()
     render_kw = Dict{Symbol,Any}()
     for (k, v) in kwargs
-        (k === :tmp_dir || k === :keep_file) && throw(_removed_artifact_keyword_error())
-        if k === :preamble || k === :extension
-            _reject_removed_tex_hook_keywords(kwargs)
-        elseif k === :strict
+        if k === :strict
             spec_kw[k] = v
             render_kw[k] = v
         elseif k in render_keys

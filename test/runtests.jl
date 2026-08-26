@@ -119,10 +119,6 @@ using LinearAlgebra
     A = Rational{Int}.([1 2; 3 4])
     B1 = Rational{Int}.([5 7; 6 8])
     B2 = Rational{Int}.([9; 10])
-    @test_throws MethodError ShowGE(A; tmp_dir="/tmp/old")
-    @test_throws MethodError ShowGE(A, B2; tmp_dir="/tmp/old")
-    @test_throws MethodError ShowGE(A; keep_file="/tmp/old")
-    @test_throws MethodError ShowGE(A, B2; keep_file="/tmp/old")
     @test :artifact_dir in fieldnames(typeof(ShowGE(A)))
     @test :output_stem in fieldnames(typeof(ShowGE(A)))
     @test ShowGE(A; output_stem="demo").output_stem == "demo"

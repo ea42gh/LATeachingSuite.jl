@@ -726,15 +726,6 @@ function _ge_pyify_payload(
     )
 end
 
-const _REMOVED_GE_DECORATION_KEYWORDS = (:pivot_list, :bg_for_entries, :ref_path_list, :comment_list)
-
-function _reject_removed_ge_decoration_keywords(kwargs)
-    for old_kw in _REMOVED_GE_DECORATION_KEYWORDS
-        if haskey(kwargs, old_kw)
-            throw(ArgumentError("Removed GE decoration keyword: $(old_kw). Use pivot_locs, decorations, rowechelon_paths, or text_annotations instead."))
-        end
-    end
-end
 function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex,
              variable_colors=["blue","black"], pivot_colors=["blue","yellow!40"], pivot_text_color=nothing,
              variable_summary=nothing, array_names=nothing,
@@ -742,14 +733,6 @@ function _matrixlayout_ge( matrices; n_rhs=0, formatter=to_latex,
              render_opts=nothing, rhs_status=nothing, pivot_locs=nothing, rowechelon_paths=nothing,
              text_annotations=nothing, kwargs... )
     mats = _prepare_ge_mats(matrices, formatter)
-    if haskey(kwargs, :specs)
-        throw(ArgumentError("Removed GE matrix-label alias: specs. Use callouts instead."))
-    end
-    if haskey(kwargs, :func)
-        throw(ArgumentError("Removed GE mutation hook: func. Use decorators, decorations, callouts, text_annotations, or rowechelon_paths instead."))
-    end
-    _reject_removed_artifact_keyword(kwargs)
-    _reject_removed_ge_decoration_keywords(kwargs)
     callouts = get(kwargs, :callouts, nothing)
     decorators = get(kwargs, :decorators, nothing)
     decorations = get(kwargs, :decorations, nothing)
