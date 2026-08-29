@@ -1,6 +1,6 @@
 name = "LATeachingSuite"
 uuid = "f02a1d25-8fbe-4b7a-bfa2-9b29357c8d47"
-version = "0.1.0-DEV"
+version = "0.1.0"
 authors = ["ea42_github@mail.com"]
 
 [deps]
