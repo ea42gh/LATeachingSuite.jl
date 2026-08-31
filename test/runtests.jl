@@ -173,6 +173,12 @@ using LinearAlgebra
 
     Afrom = GenLAProblems.gen_from_jordan_form([GenLAProblems.jordan_block(2, 2), GenLAProblems.jordan_block(0, 1)]; maxint=2)
     @test LATeachingSuite.charpoly(Afrom) == LATeachingSuite.charpoly([2 1 0; 0 2 0; 0 0 0])
+    Acx = Complex{Rational{Int}}.([-2 0; 0 -2im])
+    pcomplex = LATeachingSuite.charpoly(Acx)
+    symbolics = LATeachingSuite._ensure_symbolics()
+    lambda = symbolics.variable(:λ)
+    expected_complex = symbolics.expand((-2 - lambda) * (-2im - lambda))
+    @test symbolics.simplify(pcomplex - expected_complex) == 0
 
     Aqr = Rational{Int}.([1 1; 0 1])
     Wqr = LATeachingSuite.gram_schmidt_w(Aqr)

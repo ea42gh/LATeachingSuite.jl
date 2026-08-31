@@ -491,71 +491,39 @@ end
 # ------------------------------------------------------------------------------
 const Rq, λ = AbstractAlgebra.QQ["λ"]
 const Qx, x = AbstractAlgebra.polynomial_ring(AbstractAlgebra.QQ, "x")
-const _K_i = Ref{Any}(nothing)
-const _Kλ = Ref{Any}(nothing)
 
-function _get_number_field()
-    if _K_i[] !== nothing
-        return _K_i[]::Tuple
-    end
-    if isdefined(AbstractAlgebra, :NumberField)
-        _K_i[] = AbstractAlgebra.NumberField(x^2 + 1, "i")
-    elseif isdefined(AbstractAlgebra, :number_field)
-        _K_i[] = AbstractAlgebra.number_field(x^2 + 1, "i")
-    else
-        error("AbstractAlgebra number field constructor not available.")
-    end
-    return _K_i[]::Tuple
-end
-
-function _get_K_lambda()
-    if _Kλ[] !== nothing
-        return _Kλ[]::Tuple
-    end
-    K, _ = _get_number_field()
-    _Kλ[] = AbstractAlgebra.polynomial_ring(K, "λ")
-    return _Kλ[]::Tuple
-end
-
-"""
-    charpoly(A::AbstractMatrix{Rational{Int64}})
-
-Compute the characteristic polynomial over rationals.
-"""
 function charpoly(A::AbstractMatrix{Rational{Int64}})
     M = matrix(Rq, Matrix(A))
     B = M - λ * one(M)
     det(B)
 end
 
-"""
-    charpoly(A::AbstractMatrix{Int64})
-
-Compute the characteristic polynomial over rationals for integer matrices.
-"""
 function charpoly(A::AbstractMatrix{Int64})
     M = matrix(Rq, Matrix(A))
     B = M - λ * one(M)
     det(B)
 end
 
-_to_complex_rational_field(z::Complex{Rational{Int64}}) = begin
-    K, i = _get_number_field()
-    K(real(z)) + K(imag(z)) * i
-end
+"""Construct the exact characteristic polynomial for Gaussian rationals.
 
-"""
-    charpoly(A::AbstractMatrix{Complex{Rational{Int64}}})
-
-Compute the characteristic polynomial over the Gaussian rationals.
+AbstractAlgebra no longer provides a concrete number-field constructor. Symbolics
+is already a LATeachingSuite dependency and can represent the same exact
+coefficient domain without requiring an additional number-field package.
 """
 function charpoly(A::AbstractMatrix{Complex{Rational{Int64}}})
-    K, _ = _get_number_field()
-    Kλ, λc = _get_K_lambda()
-    A2 = map(_to_complex_rational_field, A)
-    M = matrix(K, A2)
-    B = M - λc * one(M)
-    det(B)
+    size(A, 1) == size(A, 2) || throw(ArgumentError("charpoly requires a square matrix"))
+    symbolics = _ensure_symbolics()
+    lambda = symbolics.variable(:λ)
+    T = typeof(lambda)
+    zero = Complex{T}(symbolics.Num(0), symbolics.Num(0))
+    M = Matrix{Complex{T}}(undef, size(A))
+    for i in axes(A, 1), j in axes(A, 2)
+        z = A[i, j]
+        entry = Complex{T}(symbolics.Num(real(z)), symbolics.Num(imag(z)))
+        diagonal = i == j ? Complex{T}(lambda, symbolics.Num(0)) : zero
+        M[i, j] = entry - diagonal
+    end
+    symbolics.expand(det(M))
 end
 
 """
