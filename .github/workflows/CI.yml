@@ -35,35 +35,35 @@ jobs:
           - "1.12"
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: ea42gh/GenLAProblems.jl
           ref: ${{ env.GENLAPROBLEMS_REF }}
           path: GenLAProblems
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: ea42gh/LAlatex
           ref: ${{ env.LALATEX_REF }}
           path: LAlatex
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         if: matrix.version == '1.12'
         with:
           repository: ea42gh/LAFigureSpecs
           ref: ${{ env.LAFIGURESPECS_REF }}
           path: LAFigureSpecs
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         if: matrix.version == '1.12'
         with:
           repository: ea42gh/matrixlayout
           ref: ${{ env.MATRIXLAYOUT_REF }}
           path: matrixlayout
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         if: matrix.version == '1.12'
         with:
           python-version: "3.11"
@@ -75,11 +75,11 @@ jobs:
           python -m pip install ./matrixlayout
           python -m pip install ./LAFigureSpecs
 
-      - uses: julia-actions/setup-julia@v3
+      - uses: julia-actions/setup-julia@fa02766e078afaaf09b14210362cee14137e6a32 # v3
         with:
           version: ${{ matrix.version }}
 
-      - uses: julia-actions/cache@v3
+      - uses: julia-actions/cache@a45e8fa8be21c18a06b7177052533149e61e9b38 # v3
 
       - name: Develop sibling Julia packages
         shell: julia --project=. {0}
@@ -89,8 +89,8 @@ jobs:
           Pkg.develop(path=joinpath(pwd(), "LAlatex"))
           Pkg.instantiate()
 
-      - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-runtest@v1
+      - uses: julia-actions/julia-buildpkg@e3eb439fad4f9aba7da2667e7510e4a46ebc46e1 # v1
+      - uses: julia-actions/julia-runtest@6e050c8013b833b1195105ff2fce9cd802f53271 # v1
 
       - name: Run Julia bridge smoke
         if: matrix.version == '1.12'
