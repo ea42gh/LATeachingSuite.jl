@@ -22,17 +22,22 @@ end
 # ==============================================================================================================
 
 raw"""pb = ShowGE{T}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
-  <br>pb = ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
-  <br>pb = ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
   <br>pb = ShowGE{T}(A::AbstractMatrix{T}, (B1, B2, ...); output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
-  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
-  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractVector{T}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
   <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}, (B1, B2, ...); output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
   <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
   <br>pb = ShowGE{Rational{T}}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
-  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractVector{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
-  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
-  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, (B1, B2, ...); output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number"""
+  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractVector{Complex{T}}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+  <br>pb = ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, (B1, B2, ...); output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+
+For one combined RHS matrix, `n_rhs` may specify its groups by column count.
+The default keeps the whole matrix as one group; a scalar or sequence override
+must sum to the RHS matrix's number of columns. Tuple or vector inputs of
+separate RHS matrices retain their own group boundaries."""
 mutable struct ShowGE{T<:Number}
     artifact_dir
     output_stem
@@ -61,18 +66,24 @@ mutable struct ShowGE{T<:Number}
     function ShowGE(A::AbstractMatrix; output_dir="/tmp/la/run", output_stem="show_layout")
         ShowGE{eltype(A)}(A; output_dir=output_dir, output_stem=output_stem)
     end
-    function ShowGE(A::AbstractMatrix, b; output_dir="/tmp/la/run", output_stem="show_layout")
-        ShowGE{eltype(A)}(A, b; output_dir=output_dir, output_stem=output_stem)
+    function ShowGE(A::AbstractMatrix, b; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout")
+        if b isa Tuple || b isa AbstractVector{<:AbstractMatrix}
+            n_rhs === nothing || throw(ArgumentError("n_rhs is only accepted when the RHS is supplied as one vector or matrix; block RHS inputs define their own partitions"))
+            return ShowGE{eltype(A)}(A, b; output_dir=output_dir, output_stem=output_stem)
+        end
+        ShowGE{eltype(A)}(A, b; n_rhs=n_rhs, output_dir=output_dir, output_stem=output_stem)
     end
     function ShowGE{T}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         new(output_dir, output_stem, A, nothing, Int[], false)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractVector{T}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         Bm = reshape(B, :, 1)
-        new(output_dir, output_stem, A, (Bm,), [1], false)
+        blocks = _rhs_blocks_with_partition(Bm, n_rhs)
+        new(output_dir, output_stem, A, blocks, _rhs_group_sizes(blocks), false)
     end
-    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
-        new(output_dir, output_stem, A, (B,), [size(B, 2)], false)
+    function ShowGE{T}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+        blocks = _rhs_blocks_with_partition(B, n_rhs)
+        new(output_dir, output_stem, A, blocks, _rhs_group_sizes(blocks), false)
     end
     function ShowGE{T}(A::AbstractMatrix{T}, Bs::Tuple; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         blocks = _normalize_rhs_blocks(Bs)
@@ -86,13 +97,15 @@ mutable struct ShowGE{T<:Number}
     function ShowGE{Rational{T}}(A::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         new(output_dir, output_stem, Rational{T}.(A), nothing, Int[], false)
     end
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractVector{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractVector{T}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         Bm = Rational{T}.(reshape(B, :, 1))
-        new(output_dir, output_stem, Rational{T}.(A), (Bm,), [1], false)
+        blocks = _rhs_blocks_with_partition(Bm, n_rhs)
+        new(output_dir, output_stem, Rational{T}.(A), blocks, _rhs_group_sizes(blocks), false)
     end
-    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+    function ShowGE{Rational{T}}(A::AbstractMatrix{T}, B::AbstractMatrix{T}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         Bm = Rational{T}.(B)
-        new(output_dir, output_stem, Rational{T}.(A), (Bm,), [size(Bm, 2)], false)
+        blocks = _rhs_blocks_with_partition(Bm, n_rhs)
+        new(output_dir, output_stem, Rational{T}.(A), blocks, _rhs_group_sizes(blocks), false)
     end
     function ShowGE{Rational{T}}(A::AbstractMatrix{T}, Bs::Tuple; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         A2 = Rational{T}.(A)
@@ -108,13 +121,15 @@ mutable struct ShowGE{T<:Number}
     function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         new(output_dir, output_stem, Complex{Rational{T}}.(A), nothing, Int[], false)
     end
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractVector{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractVector{Complex{T}}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         Bm = Complex{Rational{T}}.(reshape(B, :, 1))
-        new(output_dir, output_stem, Complex{Rational{T}}.(A), (Bm,), [1], false)
+        blocks = _rhs_blocks_with_partition(Bm, n_rhs)
+        new(output_dir, output_stem, Complex{Rational{T}}.(A), blocks, _rhs_group_sizes(blocks), false)
     end
-    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
+    function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, B::AbstractMatrix{Complex{T}}; n_rhs=nothing, output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         Bm = Complex{Rational{T}}.(B)
-        new(output_dir, output_stem, Complex{Rational{T}}.(A), (Bm,), [size(Bm, 2)], false)
+        blocks = _rhs_blocks_with_partition(Bm, n_rhs)
+        new(output_dir, output_stem, Complex{Rational{T}}.(A), blocks, _rhs_group_sizes(blocks), false)
     end
     function ShowGE{Complex{Rational{T}}}(A::AbstractMatrix{Complex{T}}, Bs::Tuple; output_dir="/tmp/la/run", output_stem="show_layout") where T <: Number
         A2 = Complex{Rational{T}}.(A)
@@ -126,6 +141,32 @@ mutable struct ShowGE{T<:Number}
         blocks = _normalize_rhs_blocks(map(B -> Complex{Rational{T}}.(B), Bs))
         new(output_dir, output_stem, A2, blocks, _rhs_group_sizes(blocks), false)
     end
+end
+
+function _rhs_blocks_with_partition(B::AbstractMatrix, n_rhs)
+    n_rhs === nothing && return (B,)
+
+    groups = if n_rhs isa Integer && !(n_rhs isa Bool)
+        [Int(n_rhs)]
+    elseif n_rhs isa Tuple || n_rhs isa AbstractVector
+        values = collect(n_rhs)
+        all(n -> n isa Integer && !(n isa Bool) && n >= 0, values) ||
+            throw(ArgumentError("n_rhs must be a nonnegative integer or a sequence of nonnegative integers"))
+        Int.(values)
+    else
+        throw(ArgumentError("n_rhs must be a nonnegative integer or a sequence of nonnegative integers"))
+    end
+
+    width = size(B, 2)
+    sum(groups) == width || throw(ArgumentError("sum(n_rhs) must equal the number of columns in the RHS matrix ($width)"))
+
+    first_col = 1
+    blocks = map(groups) do group_width
+        cols = first_col:(first_col + group_width - 1)
+        first_col += group_width
+        view(B, :, cols)
+    end
+    return tuple(blocks...)
 end
 
 _normalize_rhs_blocks(Bs::Tuple) = tuple((_normalize_rhs_block(B) for B in Bs)...)

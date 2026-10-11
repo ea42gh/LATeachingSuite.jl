@@ -145,6 +145,17 @@ end
         @test ge_seen[:rowechelon_paths] !== nothing
         @test ge_seen[:variable_summary] !== nothing
         @test ge_seen[:fig_scale] == 1.1
+
+        grouped_rhs = ShowGE{Rational{Int}}(
+            [1 2; 3 4], [5 7 1 0; 6 8 0 1]; n_rhs=(1, 1, 2),
+        )
+        ref!(grouped_rhs; gj=false)
+        grouped_names = ["E", ["A", "b_1", "b_2", "I"]]
+        show_layout!(grouped_rhs; array_names=grouped_names)
+        py = LATeachingSuite.ensure_pythoncall!()
+        passed_groups = Base.invokelatest(py.pyconvert, Vector{Int}, ge_seen[:n_rhs])
+        @test passed_groups == [1, 1, 2]
+        @test haskey(ge_seen, :array_names)
     finally
         LATeachingSuite._LAFigureSpecs[] = old_ge_la
     end

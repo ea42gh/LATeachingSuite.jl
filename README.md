@@ -55,9 +55,25 @@ Additional semantic queries are available on the same specs:
 For `ShowGE`, RHS data is organized as one or more RHS matrices:
 
 - `ShowGE(A, B)` uses one RHS matrix `B`
+- `ShowGE(A, B; n_rhs=(...))` partitions columns of one combined RHS matrix by group widths
 - `ShowGE(A, (B1, B2, ...))` uses multiple RHS matrices
+- `n_rhs` defaults to one group and, when supplied, its entries must sum to `size(B, 2)`
 - `b_mat` selects which RHS matrix
 - `b_col` selects a column within that RHS matrix
+
+For example, a two-column `B` followed by an `M`-column identity can remain a
+single augmented RHS argument. To keep `B` as one group, use:
+
+```julia
+GE = ShowGE{Rational{Int}}(A, [B Matrix(1I(M))]; n_rhs=(size(B, 2), M))
+ref!(GE; gj=false)
+show_layout!(GE; array_names=["E", ["A", "B", "I"]])
+```
+
+To display each of the two columns of `B` as its own group instead, use
+`n_rhs=(1, 1, M)` and label those groups separately, for example
+`["E", ["A", "b_1", "b_2", "I"]]`. The combined matrix is not sliced by the
+caller; the constructor retains the requested RHS group boundaries internally.
 
 Use the accessors to inspect the selected matrices and columns:
 

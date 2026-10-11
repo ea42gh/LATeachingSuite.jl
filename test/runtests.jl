@@ -119,6 +119,20 @@ using LinearAlgebra
     A = Rational{Int}.([1 2; 3 4])
     B1 = Rational{Int}.([5 7; 6 8])
     B2 = Rational{Int}.([9; 10])
+    A_int = [1 2; 3 4]
+    B_grouped = [5 7 1 0; 6 8 0 1]
+    pb_grouped = ShowGE{Rational{Int}}(A_int, B_grouped; n_rhs=(1, 1, 2))
+    @test pb_grouped.n_rhs == [1, 1, 2]
+    @test length(pb_grouped.B) == 3
+    @test pb_grouped.B[1] == Rational{Int}.(B_grouped[:, 1:1])
+    @test pb_grouped.B[2] == Rational{Int}.(B_grouped[:, 2:2])
+    @test pb_grouped.B[3] == Rational{Int}.(B_grouped[:, 3:4])
+    ref!(pb_grouped; gj=false)
+    @test size(rhs_matrix(pb_grouped, 1), 2) == 1
+    @test size(rhs_matrix(pb_grouped, 2), 2) == 1
+    @test size(rhs_matrix(pb_grouped, 3), 2) == 2
+    @test_throws ArgumentError ShowGE{Rational{Int}}(A_int, B_grouped; n_rhs=(1, 1, 1))
+    @test_throws ArgumentError ShowGE{Rational{Int}}(A_int, B_grouped; n_rhs=(1, -1, 4))
     @test :artifact_dir in fieldnames(typeof(ShowGE(A)))
     @test :output_stem in fieldnames(typeof(ShowGE(A)))
     @test ShowGE(A; output_stem="demo").output_stem == "demo"
