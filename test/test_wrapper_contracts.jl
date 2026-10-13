@@ -325,8 +325,11 @@ end
     A, _, B = gen_gj_pb(3, 5, 3; maxint=2, pivot_in_first_col=true, num_rhs=1, has_zeros=true)
     pb = ShowGE{Rational{Int}}(A, B)
     A2, b2 = LATeachingSuite._backsub_ref(pb; b_mat=1, b_col=1)
+    A_h, b_h = LATeachingSuite._backsub_ref(pb; b_col=nothing)
     @test A2 isa Vector{<:Vector}
     @test b2 isa Vector
+    @test A_h == A2
+    @test b_h == LATeachingSuite._python_exact_literal(zeros(eltype(pb.A), size(pb.A, 1)))
 
     la = _py_ns_lat()
     ml = _py_ns_lat()
@@ -360,6 +363,11 @@ end
         @test seen[:kwargs][:param_name] == "\\beta"
         @test seen[:render_opts]["padding"] == (LATeachingSuite.mm_to_px(10), LATeachingSuite.mm_to_px(10), 4, 4)
         @test seen[:render_opts]["frame"] === true
+
+        homogeneous_svg = show_backsubstitution!(pb; b_col=nothing, output_stem="homogeneous_backsub_demo")
+        @test homogeneous_svg isa LATeachingSuite.SVGOut
+        @test seen[:A] == A_h
+        @test seen[:b] == b_h
     finally
         LATeachingSuite._LAFigureSpecs[] = old_la
         LATeachingSuite._matrixlayout[] = old_ml

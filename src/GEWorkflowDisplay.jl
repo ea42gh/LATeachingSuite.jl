@@ -153,11 +153,13 @@ function _backsub_ref(pb::ShowGE; b_mat=1, b_col=1)
         Ab = mats[end][end]
     end
     A = Ab[:, 1:size(pb.A, 2)]
-    if _rhs_col_count(pb) > 0
+    if b_col === nothing
+        b = zeros(eltype(A), size(A, 1))
+    elseif _rhs_col_count(pb) > 0
         global_col = _rhs_global_col_index(pb, Int(b_mat), Int(b_col))
         b = Ab[:, size(pb.A, 2) + global_col]
     else
-        b = zeros(eltype(A), size(A, 1), 1)
+        b = zeros(eltype(A), size(A, 1))
     end
     b = _rhs_vector(b, b_col)
     A = _python_exact_literal_if_needed(A)
@@ -266,10 +268,22 @@ end
 """
     show_backsubstitution!(pb; b_mat=1, b_col=1, var_name="x", param_name="\alpha", fig_scale=1, output_dir=nothing, output_stem=nothing, render_opts=nothing)
 
-Render the back-substitution cascade for a `ShowGE` problem.
+Render the back-substitution cascade for a `ShowGE` problem. Set `b_col=nothing`
+to display the homogeneous system `A*x = 0`. This explicitly uses a zero
+right-hand side even when `pb` contains stored right-hand sides. In that mode,
+`b_mat` is ignored. If `pb` has no right-hand sides, the default call also uses
+an implicit zero right-hand side.
+
+For example, after reducing a problem with one or more supplied right-hand
+sides, `show_backsubstitution!(pb; b_mat=1, b_col=nothing)` renders the
+homogeneous back-substitution cascade without changing `pb` or selecting one
+of its stored right-hand sides. The default `b_col=1` continues to display the
+first column of the selected RHS block.
+
+The function returns the rendered SVG output.
 """
 function show_backsubstitution!(  pb::ShowGE{T}; b_mat=1, b_col=1, var_name::String="x", param_name::String="\\alpha", fig_scale=1, output_dir=nothing, output_stem=nothing, render_opts=nothing ) where T <: Number
-    global_col = _rhs_col_count(pb) > 0 ? _rhs_global_col_index(pb, Int(b_mat), Int(b_col)) : 0
+    global_col = b_col !== nothing && _rhs_col_count(pb) > 0 ? _rhs_global_col_index(pb, Int(b_mat), Int(b_col)) : 0
     if global_col > 0 && isdefined(pb, :rhs_status) && global_col <= length(pb.rhs_status) && pb.rhs_status[global_col] == :inconsistent
         val = _inconsistent_rhs_value(pb, global_col)
         rhs_txt = val === nothing ? "?" : _rhs_val_to_tex(val)
