@@ -238,10 +238,18 @@ end
     spec = Dict("matrices" => grid)
     Q = LATeachingSuite.q_factor_from_spec(spec)
     R = LATeachingSuite.r_factor_from_spec(spec)
-    @test size(LATeachingSuite.sym_to_julia_mat(Q)) == (4, 2)
-    @test size(LATeachingSuite.sym_to_julia_mat(R)) == (2, 2)
-    @test LATeachingSuite.SymPyHelpers.sym_eq(Q * R, A)
-    @test LATeachingSuite.SymPyHelpers.sym_eq(Q.T * Q, [1 0; 0 1])
+    @test Q isa AbstractMatrix
+    @test R isa AbstractMatrix
+    @test size(Q) == (4, 2)
+    @test size(R) == (2, 2)
+    symbolics = LATeachingSuite._ensure_symbolics()
+    reduced(M) = symbolics.simplify.(symbolics.expand.(M))
+    @test all(iszero, reduced(Q * R - A))
+    @test all(iszero, reduced(Q' * Q - [1 0; 0 1]))
+    b = A * [1, 2]
+    x = R \ (Q' * b)
+    @test all(iszero, reduced(x - [1, 2]))
+    @test all(iszero, reduced(A * x - b))
     @test !isempty(LATeachingSuite.LAlatex.L_show(Q, R))
 end
 

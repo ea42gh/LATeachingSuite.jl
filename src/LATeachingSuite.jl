@@ -391,14 +391,43 @@ function _spec_values_equal(a, b)
     end
 end
 
+function _qr_scalar_to_julia(x)
+    _py_is_py(x) || return x
+    pc = ensure_pythoncall!()
+    flag(name) = Base.invokelatest(pc.pyconvert, Bool, _pygetattr(x, name))
+    if flag(:is_Integer)
+        return Base.invokelatest(pc.pyconvert, Int, x)
+    elseif flag(:is_Rational)
+        return Base.invokelatest(pc.pyconvert, Int, x.p) //
+               Base.invokelatest(pc.pyconvert, Int, x.q)
+    elseif flag(:is_Float)
+        return Base.invokelatest(pc.pyconvert, Float64, x)
+    elseif flag(:is_Symbol)
+        return _ensure_symbolics().variable(Symbol(string(x)))
+    elseif flag(:is_Add)
+        return sum(_qr_scalar_to_julia(a) for a in x.args)
+    elseif flag(:is_Mul)
+        return prod(_qr_scalar_to_julia(a) for a in x.args)
+    elseif flag(:is_Pow)
+        base, exponent = collect(x.args)
+        b = _ensure_symbolics().Num(_qr_scalar_to_julia(base))
+        e = _qr_scalar_to_julia(exponent)
+        return e isa Rational && denominator(e) == 2 ? sqrt(b)^numerator(e) : b^e
+    end
+    throw(ArgumentError("Unsupported symbolic QR entry: $x"))
+end
+
 function _qr_factor_matrix(m)
-    # Keep symbolic scalars in a SymPy matrix so transpose and products stay exact.
-    return m isa AbstractArray && any(_py_is_py, m) ? SymPyHelpers.sym_mat(m) : m
+    (m === nothing || (_py_is_py(m) && _py_is_none(m))) && return nothing
+    m = _py_is_py(m) ? sym_to_julia_mat(m) : m
+    values = map(_qr_scalar_to_julia, m)
+    symbolics = _ensure_symbolics()
+    return any(x -> x isa symbolics.Num, values) ? symbolics.Num.(values) : values
 end
 
 function qr_matrices_from_spec(spec)
     matrices = _spec_get(spec, "matrices")
-    mats = materialize_python_value(matrices)
+    mats = _py_is_py(matrices) ? matrices : materialize_python_value(matrices)
     row1, row2, row3 = (map(_qr_factor_matrix, collect(r)) for r in mats)
     A = row1[3]
     W = row1[4]
@@ -407,7 +436,7 @@ function qr_matrices_from_spec(spec)
     S = row3[1]
     Qt = row3[2]
     R = row3[3]
-    Q = Qt === nothing ? nothing : (_py_is_py(Qt) ? _pygetattr(Qt, :T) : permutedims(Qt))
+    Q = Qt === nothing ? nothing : permutedims(Qt)
     return (A=A, W=W, WtA=WtA, WtW=WtW, S=S, Qt=Qt, Q=Q, R=R)
 end
 
@@ -432,7 +461,7 @@ function qr_matrices_from_grid(mats)
     qr = _pycall(qr_from_grid, mats)
     getmat(name::String) = begin
         try
-            materialize_python_value(qr[name])
+            _qr_factor_matrix(qr[name])
         catch
             nothing
         end
