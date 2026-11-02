@@ -43,6 +43,10 @@ helpers and then extract matrices from the returned spec:
 - `svg, eig_spec = eig_bundle(A)` then `eig_matrices_from_spec(eig_spec)`
 - `svg, svd_spec = svd_bundle(A)` then `svd_matrices_from_spec(svd_spec)`
 
+QR factors containing symbolic entries, such as exact square roots, are returned
+as SymPy matrices. Matrix products remain exact; use `sym_eq(Q * R, A)` to compare
+them with Julia matrices. Purely native factors remain Julia matrices.
+
 Additional semantic queries are available on the same specs:
 
 - `eig_eigenvalues(eig_spec)` returns `(multiplicity, λ)` pairs

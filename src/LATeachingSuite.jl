@@ -391,10 +391,15 @@ function _spec_values_equal(a, b)
     end
 end
 
+function _qr_factor_matrix(m)
+    # Keep symbolic scalars in a SymPy matrix so transpose and products stay exact.
+    return m isa AbstractArray && any(_py_is_py, m) ? SymPyHelpers.sym_mat(m) : m
+end
+
 function qr_matrices_from_spec(spec)
     matrices = _spec_get(spec, "matrices")
     mats = materialize_python_value(matrices)
-    row1, row2, row3 = (collect(r) for r in mats)
+    row1, row2, row3 = (map(_qr_factor_matrix, collect(r)) for r in mats)
     A = row1[3]
     W = row1[4]
     WtA = row2[3]
@@ -402,7 +407,7 @@ function qr_matrices_from_spec(spec)
     S = row3[1]
     Qt = row3[2]
     R = row3[3]
-    Q = Qt === nothing ? nothing : transpose(Qt)
+    Q = Qt === nothing ? nothing : (_py_is_py(Qt) ? _pygetattr(Qt, :T) : permutedims(Qt))
     return (A=A, W=W, WtA=WtA, WtW=WtW, S=S, Qt=Qt, Q=Q, R=R)
 end
 

@@ -228,6 +228,23 @@ end
     end
 end
 
+@testset "QR factors with SymPy scalar entries" begin
+    A = [1 -4; 2 -6; -1 4; -1 8]
+    la = LATeachingSuite.load_LAFigureSpecs()
+    grid = LATeachingSuite._pycall(
+        LATeachingSuite._pygetattr(la, :gram_schmidt_qr_matrices),
+        LATeachingSuite._qr_figure_input(A),
+    )
+    spec = Dict("matrices" => grid)
+    Q = LATeachingSuite.q_factor_from_spec(spec)
+    R = LATeachingSuite.r_factor_from_spec(spec)
+    @test size(LATeachingSuite.sym_to_julia_mat(Q)) == (4, 2)
+    @test size(LATeachingSuite.sym_to_julia_mat(R)) == (2, 2)
+    @test LATeachingSuite.SymPyHelpers.sym_eq(Q * R, A)
+    @test LATeachingSuite.SymPyHelpers.sym_eq(Q.T * Q, [1 0; 0 1])
+    @test !isempty(LATeachingSuite.LAlatex.L_show(Q, R))
+end
+
 @testset "Display helper wrapper contracts" begin
     @test_throws ErrorException LATeachingSuite.py_show_svg(123)
     @test_throws ErrorException LATeachingSuite.show_svg(123)
