@@ -253,6 +253,27 @@ end
     @test !isempty(LATeachingSuite.LAlatex.L_show(Q, R))
 end
 
+@testset "Native Julia SVD factors" begin
+    la = LATeachingSuite.load_LAFigureSpecs()
+    symbolics = LATeachingSuite._ensure_symbolics()
+    reduced(M) = symbolics.simplify.(symbolics.expand.(M))
+    for A in ([3 1; 1 3; 0 0], [1 1; 0 0; 0 0], [3//5 0; 0 4//5])
+        spec = LATeachingSuite._pycall(
+            LATeachingSuite._pygetattr(la, :svd_spec),
+            LATeachingSuite._qr_figure_input(A),
+        )
+        U, sigma, V, r = LATeachingSuite.svd_matrices_from_spec(spec)
+        @test U isa AbstractMatrix
+        @test sigma isa AbstractMatrix
+        @test V isa AbstractMatrix
+        @test r isa Int
+        @test all(iszero, reduced(U * sigma * V' - A))
+        @test all(iszero, reduced(U' * U - Matrix{Int}(I, r, r)))
+        @test all(iszero, reduced(V' * V - Matrix{Int}(I, r, r)))
+        @test !isempty(LATeachingSuite.LAlatex.L_show(U, sigma, V'))
+    end
+end
+
 @testset "Display helper wrapper contracts" begin
     @test_throws ErrorException LATeachingSuite.py_show_svg(123)
     @test_throws ErrorException LATeachingSuite.show_svg(123)

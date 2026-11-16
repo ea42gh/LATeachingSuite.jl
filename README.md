@@ -47,6 +47,10 @@ QR factors are Julia matrices. Exact radicals use Symbolics values, so ordinary
 Julia operations such as `Q' * b`, `R \ rhs`, and `A * x` are supported. Simplify
 symbolic residuals with `Symbolics.simplify.(Symbolics.expand.(Q * R - A))`.
 
+Similarly, `U, sigma, V, r = svd_matrices_from_spec(svd_spec)` returns native
+Julia matrices, with exact radicals represented by Symbolics values. Use `V'`
+for the right factor and reconstruct the matrix as `U * sigma * V'`.
+
 Additional semantic queries are available on the same specs:
 
 - `eig_eigenvalues(eig_spec)` returns `(multiplicity, λ)` pairs

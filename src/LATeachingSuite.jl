@@ -391,7 +391,7 @@ function _spec_values_equal(a, b)
     end
 end
 
-function _qr_scalar_to_julia(x)
+function _factor_scalar_to_julia(x)
     _py_is_py(x) || return x
     pc = ensure_pythoncall!()
     flag(name) = Base.invokelatest(pc.pyconvert, Bool, _pygetattr(x, name))
@@ -405,22 +405,22 @@ function _qr_scalar_to_julia(x)
     elseif flag(:is_Symbol)
         return _ensure_symbolics().variable(Symbol(string(x)))
     elseif flag(:is_Add)
-        return sum(_qr_scalar_to_julia(a) for a in x.args)
+        return sum(_factor_scalar_to_julia(a) for a in x.args)
     elseif flag(:is_Mul)
-        return prod(_qr_scalar_to_julia(a) for a in x.args)
+        return prod(_factor_scalar_to_julia(a) for a in x.args)
     elseif flag(:is_Pow)
         base, exponent = collect(x.args)
-        b = _ensure_symbolics().Num(_qr_scalar_to_julia(base))
-        e = _qr_scalar_to_julia(exponent)
+        b = _ensure_symbolics().Num(_factor_scalar_to_julia(base))
+        e = _factor_scalar_to_julia(exponent)
         return e isa Rational && denominator(e) == 2 ? sqrt(b)^numerator(e) : b^e
     end
-    throw(ArgumentError("Unsupported symbolic QR entry: $x"))
+    throw(ArgumentError("Unsupported symbolic factor entry: $x"))
 end
 
-function _qr_factor_matrix(m)
+function _factor_matrix_to_julia(m)
     (m === nothing || (_py_is_py(m) && _py_is_none(m))) && return nothing
     m = _py_is_py(m) ? sym_to_julia_mat(m) : m
-    values = map(_qr_scalar_to_julia, m)
+    values = map(_factor_scalar_to_julia, m)
     symbolics = _ensure_symbolics()
     return any(x -> x isa symbolics.Num, values) ? symbolics.Num.(values) : values
 end
@@ -428,7 +428,7 @@ end
 function qr_matrices_from_spec(spec)
     matrices = _spec_get(spec, "matrices")
     mats = _py_is_py(matrices) ? matrices : materialize_python_value(matrices)
-    row1, row2, row3 = (map(_qr_factor_matrix, collect(r)) for r in mats)
+    row1, row2, row3 = (map(_factor_matrix_to_julia, collect(r)) for r in mats)
     A = row1[3]
     W = row1[4]
     WtA = row2[3]
@@ -452,7 +452,13 @@ end
 function svd_matrices_from_spec(spec; reduced::Bool=true)
     la = load_LAFigureSpecs()
     svd_from_spec = _pygetattr(la, :svd_matrices_from_spec)
-    return materialize_python_value(_pycall(svd_from_spec, spec; reduced=reduced))
+    U, sigma, V, rank = _pycall(svd_from_spec, spec; reduced=reduced)
+    return (
+        _factor_matrix_to_julia(U),
+        _factor_matrix_to_julia(sigma),
+        _factor_matrix_to_julia(V),
+        materialize_python_value(rank),
+    )
 end
 
 function qr_matrices_from_grid(mats)
@@ -461,7 +467,7 @@ function qr_matrices_from_grid(mats)
     qr = _pycall(qr_from_grid, mats)
     getmat(name::String) = begin
         try
-            _qr_factor_matrix(qr[name])
+            _factor_matrix_to_julia(qr[name])
         catch
             nothing
         end
