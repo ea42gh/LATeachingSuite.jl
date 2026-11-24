@@ -209,4 +209,5 @@ using LinearAlgebra
 end
 
 include("test_wrapper_contracts.jl")
+include("test_svd_blocks.jl")
 include("test_bundle_parity.jl")

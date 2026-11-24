@@ -248,6 +248,7 @@ using Reexport
     ge_decorations,
     py_show_svg,
     show_svg,
+    svd_blocks,
     l_show_svd,
     mm_to_px,
     px_to_mm
@@ -420,6 +421,8 @@ end
 function _factor_matrix_to_julia(m)
     (m === nothing || (_py_is_py(m) && _py_is_none(m))) && return nothing
     m = _py_is_py(m) ? sym_to_julia_mat(m) : m
+    # Rank-zero reduced factors need a numeric element type for multiplication.
+    isempty(m) && return zeros(Int, size(m))
     values = map(_factor_scalar_to_julia, m)
     symbolics = _ensure_symbolics()
     return any(x -> x isa symbolics.Num, values) ? symbolics.Num.(values) : values
@@ -449,16 +452,30 @@ function eig_matrices_from_spec(spec; orthonormal::Bool=true)
     return materialize_python_value(_pycall(eig_from_spec, spec; orthonormal=orthonormal))
 end
 
-function svd_matrices_from_spec(spec; reduced::Bool=true)
+"""
+    svd_matrices_from_spec(spec; blocked=false, reduced=!blocked)
+
+Return native Julia `(U, Σ, V, r)` satisfying `A = U * Σ * V'`, where `r`
+is the matrix rank. Exact rational and symbolic entries are preserved.
+
+By default, return rank-reduced matrices of sizes `m×r`, `r×r`, and `n×r`.
+With `blocked=true`, default to full factors of sizes `m×m`, `m×n`, and
+`n×n`, partitioned at rank `r` using [`svd_blocks`](@ref). Empty partitions
+are omitted. An explicit `reduced` keyword overrides this default.
+Use `reduced=false` with `blocked=false` for ordinary full factors, or
+`blocked=true, reduced=true` for blocked rank-reduced factors.
+"""
+function svd_matrices_from_spec(spec; blocked::Bool=false, reduced::Bool=!blocked)
     la = load_LAFigureSpecs()
     svd_from_spec = _pygetattr(la, :svd_matrices_from_spec)
     U, sigma, V, rank = _pycall(svd_from_spec, spec; reduced=reduced)
-    return (
+    factors = (
         _factor_matrix_to_julia(U),
         _factor_matrix_to_julia(sigma),
         _factor_matrix_to_julia(V),
-        materialize_python_value(rank),
     )
+    r = materialize_python_value(rank)
+    return ((blocked ? svd_blocks(factors..., r) : factors)..., r)
 end
 
 function qr_matrices_from_grid(mats)
@@ -581,6 +598,7 @@ export solutions, lhs_matrix, rhs_matrix, rhs_column
 export ge_svg, qr_svg, eig_svg, svd_svg
 export qr_figure
 export show_svg, py_show_svg, l_show_svd
+export svd_blocks
 export ge_bundle, qr_bundle, eig_bundle, svd_bundle
 export qr_matrices_from_spec, eig_matrices_from_spec, svd_matrices_from_spec
 export qr_matrices_from_grid, qr_matrices_dict_from_grid

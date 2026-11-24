@@ -83,16 +83,46 @@ Alias for `py_show_svg`, for notebook-friendly SVG display.
 show_svg(svg) = py_show_svg(svg)
 
 """
+    svd_blocks(U, Σ, V, r)
+
+Return `(Ub, Σb, Vb)` as `BlockArray`s partitioned after the first `r`
+singular vectors. Columns of `U` and `V`, and both axes of `Σ`, are split
+into active and complementary blocks; empty partitions are omitted.
+
+Accepts full, economy, or rank-reduced factors satisfying `A = U * Σ * V'`.
+Entries and dimensions are preserved exactly. This helper partitions the
+supplied factors; it does not compute or validate a singular decomposition.
+"""
+function svd_blocks(U::AbstractMatrix, Σ::AbstractMatrix, V::AbstractMatrix, r::Integer)
+    size(U, 2) == size(Σ, 1) && size(V, 2) == size(Σ, 2) ||
+        throw(DimensionMismatch("U, Σ, V must have compatible SVD dimensions"))
+    0 <= r <= min(size(Σ)...) ||
+        throw(ArgumentError("r must lie between zero and the smaller dimension of Σ"))
+    partition(n) = filter(>(0), [r, n - r])
+    # BlockArrays arithmetic requires concrete scalar types. Promote mixed
+    # integer/rational storage without approximating any entries.
+    function block_entries(M)
+        isconcretetype(eltype(M)) && return M
+        isempty(M) && return zeros(Int, size(M))
+        T = mapreduce(typeof, promote_type, M)
+        return T.(M)
+    end
+    BA = _ensure_blockarrays()
+    Ub = BA.BlockArray(block_entries(U), [size(U, 1)], partition(size(U, 2)))
+    Σb = BA.BlockArray(block_entries(Σ), partition(size(Σ, 1)), partition(size(Σ, 2)))
+    Vb = BA.BlockArray(block_entries(V), [size(V, 1)], partition(size(V, 2)))
+    return Ub, Σb, Vb
+end
+
+"""
     l_show_svd(A, U, Σ, Vt, rankA)
 
 Display an SVD factorization with block structure separating the rank and null
 space components.
 """
 function l_show_svd(A, U, Σ, Vt, rankA)
-    BA = _ensure_blockarrays()
-    Ub = BA.BlockArray(U, [size(U, 1)], [rankA, size(U, 2) - rankA])
-    Σb = BA.BlockArray(Σ, [rankA, size(Σ, 1) - rankA], [rankA, size(Σ, 2) - rankA])
-    Vtb = BA.BlockArray(Vt, [rankA, size(Vt, 1) - rankA], [size(Vt, 2)])
+    Ub, Σb, Vb = svd_blocks(U, Σ, Vt', rankA)
+    Vtb = Vb'
     display(l_show(LaTeXString("A = U \\Sigma V^T : "), A, " = ", Ub, Σb, Vtb))
     return nothing
 end

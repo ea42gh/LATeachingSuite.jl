@@ -257,7 +257,11 @@ end
     la = LATeachingSuite.load_LAFigureSpecs()
     symbolics = LATeachingSuite._ensure_symbolics()
     reduced(M) = symbolics.simplify.(symbolics.expand.(M))
-    for A in ([3 1; 1 3; 0 0], [1 1; 0 0; 0 0], [3//5 0; 0 4//5])
+    for A in (
+        [3 1; 1 3; 0 0], [1 1; 0 0; 0 0], [3//5 0; 0 4//5],
+        [3 0 4 0; 0 0 0 0; 0 -10 0 0] // 5,
+        [1 0 0; 0 2 0], zeros(Int, 3, 4),
+    )
         spec = LATeachingSuite._pycall(
             LATeachingSuite._pygetattr(la, :svd_spec),
             LATeachingSuite._qr_figure_input(A),
@@ -271,6 +275,15 @@ end
         @test all(iszero, reduced(U' * U - Matrix{Int}(I, r, r)))
         @test all(iszero, reduced(V' * V - Matrix{Int}(I, r, r)))
         @test !isempty(LATeachingSuite.LAlatex.L_show(U, sigma, V'))
+        Uf, sigmaf, Vf, rf = LATeachingSuite.svd_matrices_from_spec(spec; reduced=false)
+        m, n = size(A)
+        @test rf == r == rank(A)
+        @test size(Uf) == (m, m)
+        @test size(sigmaf) == (m, n)
+        @test size(Vf) == (n, n)
+        @test all(iszero, reduced(Uf * sigmaf * Vf' - A))
+        @test all(iszero, reduced(Uf' * Uf - Matrix{Int}(I, m, m)))
+        @test all(iszero, reduced(Vf' * Vf - Matrix{Int}(I, n, n)))
     end
 end
 

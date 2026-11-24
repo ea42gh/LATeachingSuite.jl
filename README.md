@@ -51,6 +51,29 @@ Similarly, `U, sigma, V, r = svd_matrices_from_spec(svd_spec)` returns native
 Julia matrices, with exact radicals represented by Symbolics values. Use `V'`
 for the right factor and reconstruct the matrix as `U * sigma * V'`.
 
+SVD extraction defaults to rank-reduced factors. For an `m×n` matrix of rank
+`r`, their sizes are `m×r`, `r×r`, and `n×r`. Use
+`svd_matrices_from_spec(svd_spec; reduced=false)` for full factors of sizes
+`m×m`, `m×n`, and `n×n`. Both modes return the matrix rank as the fourth value.
+
+For full factors partitioned into active and complementary blocks, use:
+
+```julia
+Ub, Σb, Vb, r = svd_matrices_from_spec(svd_spec; blocked=true)
+l_show("A = ", Ub, Σb, Vb')
+```
+
+`blocked=true` defaults to full factors; `reduced=false` is unnecessary in
+this call. An explicit `reduced=true` overrides that default and returns
+blocked rank-reduced factors. With no keywords, extraction continues to return
+ordinary rank-reduced matrices. The fourth return value is the rank in all modes.
+
+Use `Ub, Σb, Vb = svd_blocks(U, sigma, V, r)` to partition factors already
+available as Julia matrices.
+The returned Julia `BlockArray`s preserve exact entries and support ordinary
+matrix arithmetic. Empty partitions are omitted. `l_show_svd` uses this helper
+internally; its existing interface takes the right factor `V'`.
+
 Additional semantic queries are available on the same specs:
 
 - `eig_eigenvalues(eig_spec)` returns `(multiplicity, λ)` pairs
